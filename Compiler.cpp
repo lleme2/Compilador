@@ -198,7 +198,30 @@ void TrataAtribuicao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens
     }
 }
 
-void TrataOPAritmetico(FILE *file, char *caractere){
+void TrataOPAritmetico(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
+
+    string lexema, simbolo;
+    // 43,45,42
+    if(*caractere == 43){
+        lexema = "+";
+        simbolo = "smais";
+        lista_de_tokens.lexema.push(lexema);
+        lista_de_tokens.simbolo.push(simbolo);
+    }
+    else if(*caractere == 45){
+        lexema = "-";
+        simbolo = "smenos";
+        lista_de_tokens.lexema.push(lexema);
+        lista_de_tokens.simbolo.push(simbolo);
+    }
+    else if(*caractere == 42){
+        lexema = "*";
+        simbolo = "smult";
+        lista_de_tokens.lexema.push(lexema);
+        lista_de_tokens.simbolo.push(simbolo);
+    }
+
+    *caractere = fgetc(file);
 
 }
 
@@ -207,7 +230,7 @@ void TrataOPRelacional(FILE *file, char *caractere){
 }
 
 void TrataPontuacao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
-    
+
     string lexema, simbolo;
     if(*caractere == 59){
         lexema = ";";
@@ -259,7 +282,7 @@ void PegaToken(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
     //testa se o caractere pertence a {+,-,*}
     else if((*caractere == 43) || (*caractere == 45) || (*caractere == 42))
-        TrataOPAritmetico(file, caractere);
+        TrataOPAritmetico(file, caractere, lista_de_tokens);
 
     //testa se o caractere pertence a {!, <, >, =}
     else if((*caractere == 33) || (*caractere == 60) || (*caractere == 62) || (*caractere == 61))
