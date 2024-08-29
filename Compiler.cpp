@@ -5,7 +5,7 @@
 #include <string>
 #include <iomanip>
 #include <cctype>
-#include <algorithm>  
+#include <algorithm>
 
 using namespace std;
 
@@ -37,28 +37,29 @@ void imprime_lista_token(ListaDeTokens lista_de_tokens) {
         lista_de_tokens.lexema.pop(); // Remove o elemento de 'lexema'
         lista_de_tokens.simbolo.pop(); // Remove o elemento de 'simbolo'
     }
+    cout << "|----------------------|----------------------|" << endl;
 }
 
 
 
 
-void TrataDigito(FILE *file, char caractere, ListaDeTokens &lista_de_tokens){
+void TrataDigito(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
     //cria a variavel de controle "num"
     string num = "";
     string simbolo = "snumero";
 
     //"concatena com num o primeiro digito do numero lido"
-    num += caractere;
+    num += *caractere;
 
     //LER(CARACTERE)
-    caractere = fgetc(file);
+    *caractere = fgetc(file);
 
     //enquanto caractere for um digito
-    while((caractere > 47) && (caractere < 58)){
+    while((*caractere > 47) && (*caractere < 58)){
         //concatenar o digito em num e ir para o proximo digito
-        num += caractere;
-        caractere = fgetc(file);
+        num += *caractere;
+        *caractere = fgetc(file);
     }
 
     lista_de_tokens.simbolo.push(simbolo);
@@ -66,22 +67,22 @@ void TrataDigito(FILE *file, char caractere, ListaDeTokens &lista_de_tokens){
 
 }
 
-void TrataIDePalavraReservada(FILE *file, char caractere, ListaDeTokens &lista_de_tokens){
+void TrataIDePalavraReservada(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
     //cria a variavel de controle "id"
     string id = "";
     string simbolo;
 
     //"concatena com num o primeiro digito do numero lido"
-    id += caractere;
+    id += *caractere;
 
     //LER(CARACTERE)
-    caractere = fgetc(file);
+    *caractere = fgetc(file);
 
     //enquanto caractere for uma letra ou _
-    while((caractere > 64 && caractere < 91) || (caractere > 96 && caractere < 123) || (caractere == 95)){
+    while((*caractere > 64 && *caractere < 91) || (*caractere > 96 && *caractere < 123) || (*caractere == 95)){
         //concatenar o digito em num e ir para o proximo digito
-        id += caractere;
-        caractere = fgetc(file);
+        id += *caractere;
+        *caractere = fgetc(file);
     }
 
     // Loop para converter cada caractere para minuscula
@@ -179,14 +180,15 @@ void TrataIDePalavraReservada(FILE *file, char caractere, ListaDeTokens &lista_d
 
 }
 
-void TrataAtribuicao(FILE *file, char caractere, ListaDeTokens &lista_de_tokens){
-    caractere = fgetc(file);
+void TrataAtribuicao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
+    *caractere = fgetc(file);
     string lexema, simbolo;
-    if(caractere == '='){
+    if(*caractere == '='){
         lexema = ":=";
         simbolo = "satribuicao";
         lista_de_tokens.lexema.push(lexema);
         lista_de_tokens.simbolo.push(simbolo);
+        *caractere = fgetc(file);
     }
     else{
         lexema = ":";
@@ -196,42 +198,42 @@ void TrataAtribuicao(FILE *file, char caractere, ListaDeTokens &lista_de_tokens)
     }
 }
 
-void TrataOPAritmetico(FILE *file, char caractere){
+void TrataOPAritmetico(FILE *file, char *caractere){
 
 }
 
-void TrataOPRelacional(FILE *file, char caractere){
+void TrataOPRelacional(FILE *file, char *caractere){
 
 }
 
-void TrataPontuacao(FILE *file, char caractere){
+void TrataPontuacao(FILE *file, char *caractere){
 
 }
 
-void PegaToken(FILE *file, char caractere, ListaDeTokens &lista_de_tokens){
+void PegaToken(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
     //testa se o caractere esta entre '0' e '9'
-    if(caractere > 47 && caractere < 58)
+    if(*caractere > 47 && *caractere < 58)
         TrataDigito(file, caractere, lista_de_tokens);
 
     //testa se o caractere e uma letra entre 'A' e 'Z' ou entre 'a' e 'z'
-    else if((caractere > 64 && caractere < 91) || (caractere > 96 && caractere < 123) || (caractere == 95))
+    else if((*caractere > 64 && *caractere < 91) || (*caractere > 96 && *caractere < 123) || (*caractere == 95))
         TrataIDePalavraReservada(file, caractere, lista_de_tokens);
 
     //testa se o caractere e igual a ':'
-    else if(caractere == 58)
+    else if(*caractere == 58)
         TrataAtribuicao(file, caractere, lista_de_tokens);
 
     //testa se o caractere pertence a {+,-,*}
-    else if((caractere == 43) || (caractere == 45) || (caractere == 42))
+    else if((*caractere == 43) || (*caractere == 45) || (*caractere == 42))
         TrataOPAritmetico(file, caractere);
 
     //testa se o caractere pertence a {!, <, >, =}
-    else if((caractere == 33) || (caractere == 60) || (caractere == 62) || (caractere == 61))
+    else if((*caractere == 33) || (*caractere == 60) || (*caractere == 62) || (*caractere == 61))
         TrataOPRelacional(file, caractere);
 
     //testa se o caractere pertence a {; , ( ) .}
-    else if((caractere == 59) || (caractere == 44) || (caractere == 40) || (caractere == 41) || (caractere == 46))
+    else if((*caractere == 59) || (*caractere == 44) || (*caractere == 40) || (*caractere == 41) || (*caractere == 46))
         TrataPontuacao(file, caractere);
 
     else
@@ -240,42 +242,39 @@ void PegaToken(FILE *file, char caractere, ListaDeTokens &lista_de_tokens){
 
 }
 
-void TrataEspacoComentario(FILE *file, ListaDeTokens &lista_de_tokens){
-    char caractere;
-
-    // Ler o primeiro caractere do arquivo
-    caractere = fgetc(file);
+void TrataEspacoComentario(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
     // Enquanto nao acabou o arquivo fonte
-    while (caractere != EOF) {
+    while (*caractere != EOF) {
         //elimina comentarios e espacos
-        while ((caractere == '{' || caractere == ' ' || caractere == '\n') && (caractere != EOF)) {
-            if (caractere == '{') {
+        while ((*caractere == '{' || *caractere == ' ' || *caractere == '\n') && (*caractere != EOF)) {
+            if (*caractere == '{') {
                 // espera caractere de fechamento de comentario
-                while ((caractere = fgetc(file)) != '}' && caractere != EOF) {
+                while ((*caractere = fgetc(file)) != '}' && *caractere != EOF) {
                     // Ler pr�ximo caractere
                 }
             }
             // Ler pr�ximo caractere
-            caractere = fgetc(file);
+            *caractere = fgetc(file);
         }
 
         // Se caractere n�o for fim de arquivo
-        if (caractere != EOF) {
+        if (*caractere != EOF) {
         //Logica de montegem de token - IMPLEMENTAR
             PegaToken(file, caractere, lista_de_tokens);
         }
 
-        // Ler pr�ximo caractere
-        caractere = fgetc(file);
     }
 }
 
 
 void AnalisadorLexical(FILE *file) {
 
+    char caractere;
     ListaDeTokens lista_de_tokens;
-    TrataEspacoComentario(file, lista_de_tokens);
+
+    caractere = fgetc(file);
+    TrataEspacoComentario(file, &caractere, lista_de_tokens);
 
     imprime_lista_token(lista_de_tokens);
 
