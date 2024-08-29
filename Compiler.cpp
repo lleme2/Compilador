@@ -206,8 +206,41 @@ void TrataOPRelacional(FILE *file, char *caractere){
 
 }
 
-void TrataPontuacao(FILE *file, char *caractere){
+void TrataPontuacao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
+    
+    string lexema, simbolo;
+    if(*caractere == 59){
+        lexema = ";";
+        simbolo = "spontoevirgula";
+        lista_de_tokens.lexema.push(lexema);
+        lista_de_tokens.simbolo.push(simbolo);
+    }
+    else if(*caractere == 46){
+        lexema = ".";
+        simbolo = "sponto";
+        lista_de_tokens.lexema.push(lexema);
+        lista_de_tokens.simbolo.push(simbolo);
+    }
+    else if(*caractere == 44){
+        lexema = ",";
+        simbolo = "svirgula";
+        lista_de_tokens.lexema.push(lexema);
+        lista_de_tokens.simbolo.push(simbolo);
+    }
+    else if(*caractere == 41){
+        lexema = ")";
+        simbolo = "sfechaparenteses";
+        lista_de_tokens.lexema.push(lexema);
+        lista_de_tokens.simbolo.push(simbolo);
+    }
+    else{
+        lexema = "(";
+        simbolo = "sabreparenteses";
+        lista_de_tokens.lexema.push(lexema);
+        lista_de_tokens.simbolo.push(simbolo);
+    }
 
+    *caractere = fgetc(file);
 }
 
 void PegaToken(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
@@ -234,7 +267,7 @@ void PegaToken(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
     //testa se o caractere pertence a {; , ( ) .}
     else if((*caractere == 59) || (*caractere == 44) || (*caractere == 40) || (*caractere == 41) || (*caractere == 46))
-        TrataPontuacao(file, caractere);
+        TrataPontuacao(file, caractere, lista_de_tokens);
 
     else
         cout << ' ' << "|ERRO: CARACTERE INVALIDO|" << ' ';
