@@ -225,7 +225,58 @@ void TrataOPAritmetico(FILE *file, char *caractere, ListaDeTokens &lista_de_toke
 
 }
 
-void TrataOPRelacional(FILE *file, char *caractere){
+void TrataOPRelacional(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
+
+    string lexema, simbolo;
+    // 33, 60, 62, 61
+    if(*caractere == 33){
+        if ((*caractere = fgetc(file)) == 61) {
+            lexema = "!=";
+            simbolo = "sdif";
+            lista_de_tokens.lexema.push(lexema);
+            lista_de_tokens.simbolo.push(simbolo);
+        }
+        *caractere = fgetc(file);
+    }
+    else if(*caractere == 60){
+        if ((*caractere = fgetc(file)) == 61) {
+            lexema = "<=";
+            simbolo = "smenorig";
+            lista_de_tokens.lexema.push(lexema);
+            lista_de_tokens.simbolo.push(simbolo);
+            *caractere = fgetc(file);
+        }
+        else {
+            lexema = "<";
+            simbolo = "smenor";
+            lista_de_tokens.lexema.push(lexema);
+            lista_de_tokens.simbolo.push(simbolo);
+            *caractere = fgetc(file);
+        }
+    }
+    else if(*caractere == 62){
+        if ((*caractere = fgetc(file)) == 61) {
+            lexema = ">=";
+            simbolo = "smaiorig";
+            lista_de_tokens.lexema.push(lexema);
+            lista_de_tokens.simbolo.push(simbolo);
+            *caractere = fgetc(file);
+        }
+        else {
+            lexema = ">";
+            simbolo = "smaior";
+            lista_de_tokens.lexema.push(lexema);
+            lista_de_tokens.simbolo.push(simbolo);
+            *caractere = fgetc(file);
+        }
+    }
+    else if(*caractere == 61){
+        lexema = "=";
+        simbolo = "sig";
+        lista_de_tokens.lexema.push(lexema);
+        lista_de_tokens.simbolo.push(simbolo);
+        *caractere = fgetc(file);
+    }
 
 }
 
@@ -257,7 +308,7 @@ void TrataPontuacao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens)
         lista_de_tokens.simbolo.push(simbolo);
     }
     else{
-        lexema = "(";
+        lexema = "=";
         simbolo = "sabreparenteses";
         lista_de_tokens.lexema.push(lexema);
         lista_de_tokens.simbolo.push(simbolo);
@@ -286,7 +337,7 @@ void PegaToken(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
     //testa se o caractere pertence a {!, <, >, =}
     else if((*caractere == 33) || (*caractere == 60) || (*caractere == 62) || (*caractere == 61))
-        TrataOPRelacional(file, caractere);
+        TrataOPRelacional(file, caractere, lista_de_tokens);
 
     //testa se o caractere pertence a {; , ( ) .}
     else if((*caractere == 59) || (*caractere == 44) || (*caractere == 40) || (*caractere == 41) || (*caractere == 46))
