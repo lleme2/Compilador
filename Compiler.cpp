@@ -317,6 +317,17 @@ void TrataPontuacao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens)
     *caractere = fgetc(file);
 }
 
+void TrataErro(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
+    
+    string lexema, simbolo;
+    lexema = *caractere;
+    simbolo = "serro";
+    lista_de_tokens.lexema.push(lexema);
+    lista_de_tokens.simbolo.push(simbolo);
+
+    *caractere = fgetc(file);
+}
+
 void PegaToken(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
     //testa se o caractere esta entre '0' e '9'
@@ -344,7 +355,7 @@ void PegaToken(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
         TrataPontuacao(file, caractere, lista_de_tokens);
 
     else
-        cout << ' ' << "|ERRO: CARACTERE INVALIDO|" << ' ';
+        TrataErro(file, caractere, lista_de_tokens);
 
 
 }
