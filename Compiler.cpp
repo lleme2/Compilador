@@ -9,12 +9,17 @@
 
 using namespace std;
 
+int contador = 1;
+
 struct ListaDeTokens {
     queue<string> lexema;
     queue<string> simbolo;
 };
 
 void imprime_lista_token(ListaDeTokens lista_de_tokens) {
+
+    cout << endl << endl << endl;
+
     // Obtendo os tamanhos das filas
     int tamanho_lexema = lista_de_tokens.lexema.size();
     int tamanho_simbolo = lista_de_tokens.simbolo.size();
@@ -318,7 +323,14 @@ void TrataPontuacao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens)
 }
 
 void TrataErro(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
-    
+
+    if(*caractere == '}'){
+        cout << endl << "ERRO LEXICAL NA LINHA " << contador << ": uso de simbolo de fechamento de comentario sem um simbolo de abertura de comentario '}'";
+    }
+    else{
+        cout << endl << "ERRO LEXICAL NA LINHA " << contador << ": caractere nao reconhecido pela linguagem";
+    }
+
     string lexema, simbolo;
     lexema = *caractere;
     simbolo = "serro";
@@ -372,6 +384,9 @@ void TrataEspacoComentario(FILE *file, char *caractere, ListaDeTokens &lista_de_
                     // Ler pr�ximo caractere
                 }
             }
+            else if(*caractere == '\n'){
+                contador++;
+            }
             // Ler pr�ximo caractere
             *caractere = fgetc(file);
         }
@@ -398,6 +413,30 @@ void AnalisadorLexical(FILE *file) {
 
 }
 
+void imprime_codigo_com_linhas(){
+    FILE *arquivo_para_imprimir;
+    arquivo_para_imprimir = fopen("C:/CodigoParaCompilador.txt", "r");
+    char caractere_impresso;
+    int conta_linhas_impressao = 1;
+
+    cout << endl << endl << endl;
+
+    caractere_impresso = fgetc(arquivo_para_imprimir);
+    cout  << conta_linhas_impressao << ' ' << '|';
+
+    while(caractere_impresso != EOF){
+        if (caractere_impresso == '\n'){
+            conta_linhas_impressao++;
+            cout << caractere_impresso;
+            caractere_impresso = fgetc(arquivo_para_imprimir);
+            cout  << conta_linhas_impressao << ' ' << '|';
+        }
+        cout << caractere_impresso;
+        caractere_impresso = fgetc(arquivo_para_imprimir);
+    }
+    cout << endl << endl << endl;
+}
+
 int main() {
     FILE *file;
     file = fopen("C:/CodigoParaCompilador.txt", "r");
@@ -408,6 +447,7 @@ int main() {
     }
 
     AnalisadorLexical(file);
+    imprime_codigo_com_linhas();
 
 
     fclose(file);
