@@ -83,8 +83,8 @@ void TrataIDePalavraReservada(FILE *file, char *caractere, ListaDeTokens &lista_
     //LER(CARACTERE)
     *caractere = fgetc(file);
 
-    //enquanto caractere for uma letra ou _
-    while((*caractere > 64 && *caractere < 91) || (*caractere > 96 && *caractere < 123) || (*caractere == 95)){
+    //enquanto caractere for uma letra ou _ ou digito
+    while((*caractere > 64 && *caractere < 91) || (*caractere > 96 && *caractere < 123) || (*caractere == 95) || (*caractere > 47 && *caractere < 58)){
         //concatenar o digito em num e ir para o proximo digito
         id += *caractere;
         *caractere = fgetc(file);
@@ -313,7 +313,7 @@ void TrataPontuacao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens)
         lista_de_tokens.simbolo.push(simbolo);
     }
     else{
-        lexema = "=";
+        lexema = "(";
         simbolo = "sabreparenteses";
         lista_de_tokens.lexema.push(lexema);
         lista_de_tokens.simbolo.push(simbolo);
@@ -324,12 +324,7 @@ void TrataPontuacao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens)
 
 void TrataErro(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
-    if(*caractere == '}'){
-        cout << endl << "ERRO LEXICAL NA LINHA " << contador << ": uso de simbolo de fechamento de comentario sem um simbolo de abertura de comentario '}'";
-    }
-    else{
-        cout << endl << "ERRO LEXICAL NA LINHA " << contador << ": caractere nao reconhecido pela linguagem";
-    }
+    cout << endl << "ERRO LEXICAL NA LINHA " << contador << ": caractere '"<< *caractere << "' nao reconhecido pela linguagem";
 
     string lexema, simbolo;
     lexema = *caractere;
@@ -435,9 +430,11 @@ void imprime_codigo_com_linhas(){
         caractere_impresso = fgetc(arquivo_para_imprimir);
     }
     cout << endl << endl << endl;
+    fclose(arquivo_para_imprimir);
 }
 
 int main() {
+
     FILE *file;
     file = fopen("C:/CodigoParaCompilador.txt", "r");
 
