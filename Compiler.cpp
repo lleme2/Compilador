@@ -324,7 +324,13 @@ void TrataPontuacao(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens)
 
 void TrataErro(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
-    cout << endl << "ERRO LEXICAL NA LINHA " << contador << ": caractere '"<< *caractere << "' nao reconhecido pela linguagem";
+    if(*caractere == '}'){
+        cout << endl << "ERRO LEXICAL NA LINHA " << contador << ": '"<< *caractere << "' tentativa de fechar comentario sem par de abertura";
+    }
+
+    else{
+        cout << endl << "ERRO LEXICAL NA LINHA " << contador << ": caractere '"<< *caractere << "' nao reconhecido pela linguagem";
+    }
 
     string lexema, simbolo;
     lexema = *caractere;
@@ -369,14 +375,19 @@ void PegaToken(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
 void TrataEspacoComentario(FILE *file, char *caractere, ListaDeTokens &lista_de_tokens){
 
+    int save_linha_abre_comentario;
     // Enquanto nao acabou o arquivo fonte
     while (*caractere != EOF) {
         //elimina comentarios e espacos
         while ((*caractere == '{' || *caractere == ' ' || *caractere == '\n') && (*caractere != EOF)) {
             if (*caractere == '{') {
+                save_linha_abre_comentario = contador;
                 // espera caractere de fechamento de comentario
-                while ((*caractere = fgetc(file)) != '}' && *caractere != EOF) {
-                    // Ler pr�ximo caractere
+                while ((*caractere = fgetc(file)) != '}') {
+                    if(*caractere == EOF){
+                        cout << endl << "ERRO LEXICAL NA LINHA " << save_linha_abre_comentario << ": comentario aberto nao foi fechado";
+                        break;
+                    }
                 }
             }
             else if(*caractere == '\n'){
