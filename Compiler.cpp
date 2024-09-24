@@ -404,8 +404,65 @@ void PegaToken(FILE *file, char *caractere, Token &token){
 
 }
 
-void AnalisaBloco(FILE *file, char *caractere, Token &token){
+void Analisa_tipo(FILE *file, char *caractere, Token &token){
+    if(token.simbolo != "sinteiro" && token.simbolo != "sbooleano"){
+        msg_erro = "";
+        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": tipo de variavel invalido";
+        erros.push(msg_erro);
+    }
+    else{
+        PegaToken(file, caractere, token);
+    }
+}
 
+void Analisa_variaveis(FILE *file, char *caractere, Token &token){
+
+    do{
+        PegaToken(file, caractere, token);
+        if(token.simbolo == "svirgula" || "sdoispontos"){
+            if(token.simbolo == "svirgula"){
+                PegaToken(file, caractere, token);
+                if(token.simbolo == "sdoispontos"){
+                    msg_erro = "";
+                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando identificador de variavel apos ','";
+                    erros.push(msg_erro);
+                }
+            }
+        }
+        else{
+            msg_erro = "";
+            msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando ',' ou ':' apos declaracao de variavel";
+            erros.push(msg_erro);
+        }
+    }while(token.simbolo != "sdoispontos");
+    PegaToken(file, caractere, token);
+    Analisa_tipo(file, caractere, token);
+}
+
+void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
+    PegaToken(file, caractere, token);
+    if(token.simbolo == "sidentificador"){
+            Analisa_variaveis(file, caractere, token);
+            if(token.simbolo == "spontoevirgula"){
+                PegaToken(file, caractere, token);
+            }
+            else{
+                msg_erro = "";
+                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": Faltou ';' apos declaracao de variavel";
+                erros.push(msg_erro);
+            }
+    }
+    else{
+        msg_erro = "";
+        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": a variavel declarada nao tem identificador correspondente";
+        erros.push(msg_erro);
+    }
+}
+
+void AnalisaBloco(FILE *file, char *caractere, Token &token){
+    if(token.simbolo == "svar"){
+        Analisa_et_variaveis(file, caractere, token);
+    }
 }
 
 void AnalisadorSintatico(FILE *file) {
@@ -424,6 +481,7 @@ void AnalisadorSintatico(FILE *file) {
             PegaToken(file, &caractere, token);
             if(token.simbolo == "spontoevirgula"){
                 //se o programa se iniciou com a declaracao correta do programa, passa entao para a analise do bloco de comandos
+                PegaToken(file, &caractere, token);
                 AnalisaBloco(file, &caractere, token);
             }
 
