@@ -13,6 +13,9 @@ struct Token {
     string simbolo;
 };
 
+void Analisa_comando_simples(FILE *file, char *caractere, Token &token);
+void Analisa_expressao(FILE *file, char *caractere, Token &token);
+
 void TrataDigito(FILE *file, char *caractere, Token &token){
 
     //cria a variavel de controle "num"
