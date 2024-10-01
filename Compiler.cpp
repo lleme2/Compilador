@@ -18,6 +18,8 @@ struct Token {
     string simbolo;
 };
 
+void imprime_codigo_com_linhas();
+void imprime_erros();
 void Analisa_comando_simples(FILE *file, char *caractere, Token &token);
 void Analisa_expressao(FILE *file, char *caractere, Token &token);
 void AnalisaBloco(FILE *file, char *caractere, Token &token);
@@ -320,6 +322,9 @@ void TrataErro(FILE *file, char *caractere, Token &token){
         msg_erro = "";
         string msg_erro = "ERRO LEXICAL NA LINHA " + to_string(contador) + ": '" + string(1, *caractere) + "' tentativa de fechar comentario sem par de abertura";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
     }
 
     // se o erro for qualquer outro caractere, ele manda como erro para a fila de erros
@@ -327,6 +332,9 @@ void TrataErro(FILE *file, char *caractere, Token &token){
         msg_erro = "";
         msg_erro = "ERRO LEXICAL NA LINHA " + to_string(contador) + ": caractere '" + string(1, *caractere) + "' nao reconhecido pela linguagem";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
     }
 
     //salva como token o caractere de erro juntamente com o simbolo "serro"
@@ -362,6 +370,9 @@ void PegaToken(FILE *file, char *caractere, Token &token){
                     msg_erro = "";
                     msg_erro = "ERRO LEXICAL NA LINHA " + to_string(save_linha_abre_comentario) + ": comentario aberto nao foi fechado";
                     erros.push(msg_erro);
+                    imprime_codigo_com_linhas();
+                    imprime_erros();
+                    exit(1);
                     break;
                 }
             }
@@ -414,6 +425,9 @@ void Analisa_tipo(FILE *file, char *caractere, Token &token){
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": tipo de variavel invalido";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
     }
     else{
         PegaToken(file, caractere, token);
@@ -431,6 +445,9 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
                     msg_erro = "";
                     msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando identificador de variavel apos ','";
                     erros.push(msg_erro);
+                    imprime_codigo_com_linhas();
+                    imprime_erros();
+                    exit(1);
                     return;
                 }
             }
@@ -439,6 +456,9 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando ',' ou ':' apos declaracao de variavel";
             erros.push(msg_erro);
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);
             return;
         }
     }while(token.simbolo != "sdoispontos");
@@ -450,6 +470,7 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "svar"){
         PegaToken(file, caractere, token);
         while(token.simbolo == "sidentificador"){
+            cout << token.simbolo << endl;
             if(token.simbolo == "sidentificador"){
                     Analisa_variaveis(file, caractere, token);
                     if(token.simbolo == "spontoevirgula"){
@@ -459,6 +480,9 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
                         msg_erro = "";
                         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": Faltou ';' apos declaracao de variavel";
                         erros.push(msg_erro);
+                        imprime_codigo_com_linhas();
+                        imprime_erros();
+                        exit(1);
                         return;
 
                     }
@@ -467,6 +491,9 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": a variavel declarada nao tem identificador correspondente";
                 erros.push(msg_erro);
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
                 return;
             }
         }
@@ -483,13 +510,19 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' na declaracao do procedimento";
-            erros.push(msg_erro);                 
+            erros.push(msg_erro);     
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);            
         }
     }
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificador na declaracao do procedimento";
-        erros.push(msg_erro);          
+        erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);       
     }
 }
 
@@ -507,19 +540,28 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
                 else{
                     msg_erro = "";
                     msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' na declaracao da funcao";
-                    erros.push(msg_erro); 
+                    erros.push(msg_erro);
+                    imprime_codigo_com_linhas();
+                    imprime_erros();
+                    exit(1); 
                 }
             }
             else{
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": parametro da funcao de tipo invalido";
-                erros.push(msg_erro);                  
+                erros.push(msg_erro);
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);                  
             }
         }
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ':' apos identificador de funcao";
-            erros.push(msg_erro);             
+            erros.push(msg_erro);
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);             
         }
 
     }
@@ -527,7 +569,10 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificador na declaracao da funcao";
-        erros.push(msg_erro); 
+        erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1); 
     }
 }
 
@@ -546,7 +591,10 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';'";
-            erros.push(msg_erro);            
+            erros.push(msg_erro);
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);            
         }
     }
 }
@@ -561,6 +609,7 @@ void Chamada_procedimento(FILE *file, char *caractere, Token &token){
 
 void Analisa_fator(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sidentificador"){
+        PegaToken(file, caractere, token);
         //Analisa_chamada_funcao(file, caractere, token);
     }
     else if(token.simbolo == "snumero"){
@@ -580,6 +629,9 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": parenteses aberto nao foi fechado";
             erros.push(msg_erro);
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);
         }
     }
     else if(token.lexema == "verdadeiro" || token.lexema == "falso"){
@@ -589,7 +641,11 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": termo usado '" + token.lexema + "' invalido";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
     }
+    return;
 }
 
 void Analisa_termo(FILE *file, char *caractere, Token &token){
@@ -598,6 +654,7 @@ void Analisa_termo(FILE *file, char *caractere, Token &token){
         PegaToken(file, caractere, token);
         Analisa_fator(file, caractere, token);
     }
+    return;
 }
 
 void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
@@ -632,6 +689,7 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
 
 void Analisa_se(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
+    
     Analisa_expressao(file, caractere, token);
     if(token.simbolo == "sentao"){
         PegaToken(file, caractere, token);
@@ -645,6 +703,10 @@ void Analisa_se(FILE *file, char *caractere, Token &token){
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": falta um 'entao' apos o se";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
+        //return;
     }
 }
 
@@ -653,12 +715,16 @@ void Analisa_enquanto(FILE *file, char *caractere, Token &token){
     Analisa_expressao(file, caractere, token);
     if(token.simbolo == "sfaca"){
         PegaToken(file, caractere, token);
+        
         Analisa_comando_simples(file, caractere, token);
     }
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": falta um 'faca' apos o enquanto";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
     }
 }
 
@@ -675,18 +741,27 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o leia";
                 erros.push(msg_erro);
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
             }
         }
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificacao da variavel para leitura";
             erros.push(msg_erro);
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);
         }
     }
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou abertura de parenteses '(' para o leia";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
     }
 }
 
@@ -703,18 +778,27 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o escreva";
                 erros.push(msg_erro);
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
             }
         }
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificacao da variavel para o escreva";
             erros.push(msg_erro);
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);
         }
     }
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou abertura de parenteses '(' para o escreva";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
     }
 }
 
@@ -744,24 +828,33 @@ void Analisa_comandos(FILE *file, char *caractere, Token &token){
         PegaToken(file, caractere, token);
         Analisa_comando_simples(file, caractere, token);
         while(token.simbolo != "sfim"){
+            //cout << token.simbolo << endl;
             if(token.simbolo == "spontoevirgula"){
                 PegaToken(file, caractere, token);
                 if(token.simbolo != "sfim"){
                     Analisa_comando_simples(file, caractere, token);
                 }
+                
             }
             else{
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' apos comando";
                 erros.push(msg_erro);
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
             }
         }
         PegaToken(file, caractere, token);
     }
     else{
+        
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou usar 'inicio' para iniciar o programa declarado";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
     }
 }
 
@@ -770,7 +863,6 @@ void AnalisaBloco(FILE *file, char *caractere, Token &token){
     Analisa_et_variaveis(file, caractere, token);
     Analisa_subrotinas(file, caractere, token);
     Analisa_comandos(file, caractere, token);
-
 
 }
 
@@ -799,6 +891,9 @@ void AnalisadorSintatico(FILE *file) {
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' apos declaracao do programa";
                 erros.push(msg_erro);
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
             }
         }
         //se o programa foi declarado mas nao identificado com identificador, coloca erro na fila
@@ -806,6 +901,9 @@ void AnalisadorSintatico(FILE *file) {
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": o nome de identificacao do programa nao foi inserido";
             erros.push(msg_erro);
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);
         }
     }
     //se o programa nao iniciou declarando o "programa", coloca erro na fila
@@ -813,6 +911,9 @@ void AnalisadorSintatico(FILE *file) {
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": A linguagem exige que o inicio do codigo seja a declaracao do programa usando 'programa'";
         erros.push(msg_erro);
+        imprime_codigo_com_linhas();
+        imprime_erros();
+        exit(1);
     }
 
 }
