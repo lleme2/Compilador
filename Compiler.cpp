@@ -155,6 +155,10 @@ void TrataIDePalavraReservada(FILE *file, char *caractere, Token &token){
         simbolo = "snao";
         token.simbolo = simbolo;
     }
+    else if(id == "e"){
+        simbolo = "se";
+        token.simbolo = simbolo;
+    }
     else{
         simbolo = "sidentificador";
         token.simbolo = simbolo;
@@ -243,7 +247,7 @@ void TrataOPRelacional(FILE *file, char *caractere, Token &token){
             simbolo = "smenor";
             token.lexema = lexema;
             token.simbolo = simbolo;
-            *caractere = fgetc(file);
+            //*caractere = fgetc(file);
         }
     }
 
@@ -261,7 +265,7 @@ void TrataOPRelacional(FILE *file, char *caractere, Token &token){
             simbolo = "smaior";
             token.lexema = lexema;
             token.simbolo = simbolo;
-            *caractere = fgetc(file);
+            //*caractere = fgetc(file);
         }
     }
 
@@ -505,6 +509,8 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sidentificador"){
         PegaToken(file, caractere, token);
         if(token.simbolo == "spontoevirgula"){
+            cout << "oi GUITOS " << "\n";
+            PegaToken(file, caractere, token);
             AnalisaBloco(file, caractere, token);
         }
         else{
@@ -584,7 +590,6 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
         else{
             Analisa_declaracao_funcao(file, caractere, token);
         }
-
         if(token.simbolo == "spontoevirgula"){
             PegaToken(file, caractere, token);
         }
@@ -613,7 +618,9 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         //Analisa_chamada_funcao(file, caractere, token);
     }
     else if(token.simbolo == "snumero"){
+        cout << "Numero do fator: " << token.lexema << "\n";
         PegaToken(file, caractere, token);
+        cout << "Numero do fator 2: " << token.simbolo << "\n";
     }
     else if (token.simbolo == "snao"){
         PegaToken(file, caractere, token);
@@ -622,8 +629,10 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
     else if(token.simbolo == "sabreparenteses"){
         PegaToken(file, caractere, token);
         Analisa_expressao(file, caractere, token);
+       cout << "Voltando do analisa expressao do ( : " << token.lexema << "\n";
         if(token.simbolo == "sfechaparenteses"){
             PegaToken(file, caractere, token);
+             cout << "Voltando do if fecha parent : " << token.lexema << "\n";
         }
         else{
             msg_erro = "";
@@ -650,18 +659,25 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
 
 void Analisa_termo(FILE *file, char *caractere, Token &token){
     Analisa_fator(file, caractere, token);
+    cout << "Analisa termo : " << token.simbolo << "\n";
     while(token.simbolo == "smult" || token.simbolo == "sdiv" || token.simbolo == "se"){
+        cout << "Analisa termo com e 1: " << token.simbolo << "\n";
         PegaToken(file, caractere, token);
+        cout << "Analisa termo com e 2: " << token.lexema << "\n";
         Analisa_fator(file, caractere, token);
-    }
+        cout << "Analisa termo com e 3: " << token.lexema << "\n";
+    } // satã
+    cout << "saiu plmds saiu " << token.lexema << "\n";
     return;
 }
 
 void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
+    cout << "Simbolo expressao simples: " << token.lexema << "\n";
     if(token.simbolo == "smais" || token.simbolo == "smenos"){
         PegaToken(file, caractere, token);
     }
     Analisa_termo(file, caractere, token);
+    cout << "saiu plmds saiu 2 " << token.lexema << "\n";
     while(token.simbolo == "smais" || token.simbolo == "smenos" || token.simbolo == "sou"){
         PegaToken(file, caractere, token);
         Analisa_termo(file, caractere, token);
@@ -670,18 +686,25 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
 
 void Analisa_expressao(FILE *file, char *caractere, Token &token){
     Analisa_expressao_simples(file, caractere, token);
-    if(token.simbolo == "smaior" || token.simbolo == "smaiorig" || token.simbolo == "sig" || token.simbolo == "smenor" || token.simbolo == "smenorig" || token.simbolo == "sdif"){
+    cout << "Token da expressao normal: " << token.lexema << "\n";
+    while(token.simbolo == "smaior" || token.simbolo == "smaiorig" || token.simbolo == "sig" || token.simbolo == "smenor" || token.simbolo == "smenorig" || token.simbolo == "sdif"){
+        cout << "Token TESTE: " << token.simbolo << "\n";
         PegaToken(file, caractere, token);
+        cout << "Token TESTE: " << token.simbolo << "\n";
         Analisa_expressao_simples(file, caractere, token);
     }
+    cout << "Token da expressao normal 2: " << token.lexema << "\n";
 }
 
 void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
+    cout << "Token da atribuicao: " << token.lexema << "\n";
     if(token.simbolo == "satribuicao"){
         PegaToken(file, caractere, token);
+        cout << "Token da possivel atribuicao: " << token.lexema << "\n";
         Analisa_expressao(file, caractere, token);
     }
+     
     /*else{
         Chamada_procedimento(file, caractere, token);
     }*/
@@ -689,11 +712,11 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
 
 void Analisa_se(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
-    
     Analisa_expressao(file, caractere, token);
     if(token.simbolo == "sentao"){
         PegaToken(file, caractere, token);
         Analisa_comando_simples(file, caractere, token);
+        cout << "Token dps do analisa comando simples SE: " << token.lexema << "\n";
         if(token.simbolo == "ssenao"){
             PegaToken(file, caractere, token);
             Analisa_comando_simples(file, caractere, token);
@@ -824,9 +847,11 @@ void Analisa_comando_simples(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_comandos(FILE *file, char *caractere, Token &token){
+    cout << "Analisa Comandos: " << token.simbolo << endl;
     if(token.simbolo == "sinicio"){
         PegaToken(file, caractere, token);
         Analisa_comando_simples(file, caractere, token);
+        cout << "Volta do comando simples do analisa_comandos: " << token.lexema << "\n";
         while(token.simbolo != "sfim"){
             //cout << token.simbolo << endl;
             if(token.simbolo == "spontoevirgula"){
@@ -878,11 +903,13 @@ void AnalisadorSintatico(FILE *file) {
         //se o arquivo de fato comecar com "sprograma", pega mais um token e testa para ver se a variavel programa eh identificada com um identificador
         PegaToken(file, &caractere, token);
         if(token.simbolo == "sidentificador"){
+            cout << token.lexema << "\n";
             //se a variavel for identificada com um identificador, testa se a declaracao eh fechada com um ";"
             PegaToken(file, &caractere, token);
             if(token.simbolo == "spontoevirgula"){
                 //se o programa se iniciou com a declaracao correta do programa, passa entao para a analise do bloco de comandos
                 PegaToken(file, &caractere, token);
+                cout << token.simbolo << "\n";
                 AnalisaBloco(file, &caractere, token);
             }
 
