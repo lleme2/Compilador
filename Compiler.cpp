@@ -504,7 +504,7 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
     }
     else{
         msg_erro = "";
-        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": termo usado '" << token.lexema << "' invalido";
+        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": termo usado '" + token.lexema + "' invalido";
         erros.push(msg_erro);
     }
 }
