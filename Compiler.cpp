@@ -471,7 +471,9 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
+    cout << "Token: " << token.simbolo << "\n";
     if(token.simbolo == "svar"){
+        cout << "Chegou no var" << "\n";
         PegaToken(file, caractere, token);
         while(token.simbolo == "sidentificador"){
             cout << token.simbolo << endl;
@@ -479,6 +481,7 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
                     Analisa_variaveis(file, caractere, token);
                     if(token.simbolo == "spontoevirgula"){
                         PegaToken(file, caractere, token);
+                        cout << "Token dps do ; das var: " << token.simbolo << "\n";
                     }
                     else{
                         msg_erro = "";
@@ -512,6 +515,7 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
             cout << "oi GUITOS " << "\n";
             PegaToken(file, caractere, token);
             AnalisaBloco(file, caractere, token);
+            PegaToken(file, caractere, token);
         }
         else{
             msg_erro = "";
@@ -541,7 +545,10 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
             if(token.simbolo == "sinteiro" || token.simbolo == "sbooleano"){
                 PegaToken(file, caractere, token);
                 if(token.simbolo == "spontoevirgula"){
+                    cout << "Cheguei no analisa bloco de funcao" << "\n";
+                    PegaToken(file, caractere, token);
                     AnalisaBloco(file, caractere, token);
+                    PegaToken(file, caractere, token);
                 }
                 else{
                     msg_erro = "";
@@ -584,6 +591,7 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
 
 void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
     while(token.simbolo == "sprocedimento" || token.simbolo == "sfuncao"){
+        cout << "Funcao ou proc: " << token.simbolo << "\n";
         if(token.simbolo == "sprocedimento"){
             Analisa_declaracao_procedimento(file, caractere, token);
         }
@@ -594,6 +602,7 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
             PegaToken(file, caractere, token);
         }
         else{
+            cout << "Token antes do erro: " << token.lexema << "\n";
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';'";
             erros.push(msg_erro);
@@ -666,7 +675,7 @@ void Analisa_termo(FILE *file, char *caractere, Token &token){
         cout << "Analisa termo com e 2: " << token.lexema << "\n";
         Analisa_fator(file, caractere, token);
         cout << "Analisa termo com e 3: " << token.lexema << "\n";
-    } // satã
+    } 
     cout << "saiu plmds saiu " << token.lexema << "\n";
     return;
 }
@@ -870,7 +879,7 @@ void Analisa_comandos(FILE *file, char *caractere, Token &token){
                 exit(1);
             }
         }
-        PegaToken(file, caractere, token);
+     
     }
     else{
         
@@ -888,6 +897,7 @@ void AnalisaBloco(FILE *file, char *caractere, Token &token){
     Analisa_et_variaveis(file, caractere, token);
     Analisa_subrotinas(file, caractere, token);
     Analisa_comandos(file, caractere, token);
+
 
 }
 
@@ -911,6 +921,24 @@ void AnalisadorSintatico(FILE *file) {
                 PegaToken(file, &caractere, token);
                 cout << token.simbolo << "\n";
                 AnalisaBloco(file, &caractere, token);
+                PegaToken(file, &caractere, token);
+                if(token.simbolo != "sponto"){
+                    msg_erro = "";
+                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": Faltou ponto para fim de arquivo";
+                    erros.push(msg_erro);
+                    imprime_codigo_com_linhas();
+                    imprime_erros();
+                    exit(1);
+                }
+                PegaToken(file, &caractere, token);
+                if(token.simbolo != "sfimarquivo"){
+                    msg_erro = "";
+                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": tentativa de escrever algo após fim de arquivo";
+                    erros.push(msg_erro);
+                    imprime_codigo_com_linhas();
+                    imprime_erros();
+                    exit(1);
+                }
             }
 
             //se faltou ";" na declaracao do programa, coloca na fila uma mensagem de erro
