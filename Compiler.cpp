@@ -983,7 +983,9 @@ int main() {
 
     //abertura do arquivo fonte
     FILE *file;
-    file = fopen("C:/CodigoParaCompilador.txt", "r");
+    //file = fopen("C:/CodigoParaCompilador.txt", "r");
+    file = fopen("D:/Users/Home/Desktop/CodigoCompilador", "r");
+    
 
     //tratamento de erro na abertura do arquivo
     if (file == NULL) {

@@ -50,3 +50,52 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Python specific patterns
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+.ENV/
+.venv/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Python metadata files
+*.egg
+*.egg-info/
+dist/
+build/
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
