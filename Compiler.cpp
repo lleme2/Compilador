@@ -1,9 +1,15 @@
+#define PATH_COMPILER "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler.cpp"
+#define PATH_OUTPUT "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler"
+#define PATH_LOG "d:/Users/Home/Documents/GitHub/demo/Compilador/log.txt"
+#define PATH_TXT "D:/Users/Home/Desktop/CodigoCompilador.txt"
+
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <cctype>
 #include <queue>
+#include <fstream>
 
 using namespace std;
 
@@ -604,13 +610,9 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
     }
 }
 
-void Analisa_chamada_funcao(FILE *file, char *caractere, Token &token){
+//void Analisa_chamada_funcao(FILE *file, char *caractere, Token &token){}
 
-}
-
-void Chamada_procedimento(FILE *file, char *caractere, Token &token){
-
-}
+//void Chamada_procedimento(FILE *file, char *caractere, Token &token){}
 
 void Analisa_fator(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sidentificador"){
@@ -918,7 +920,7 @@ void AnalisadorSintatico(FILE *file) {
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' apos declaracao do programa";
                 erros.push(msg_erro);
-                imprime_codigo_com_linhas();
+                //imprime_codigo_com_linhas();
                 imprime_erros();
                 exit(1);
             }
@@ -947,7 +949,7 @@ void AnalisadorSintatico(FILE *file) {
 
 void imprime_codigo_com_linhas(){
     FILE *arquivo_para_imprimir;
-    arquivo_para_imprimir = fopen("C:/CodigoParaCompilador.txt", "r");
+    arquivo_para_imprimir = fopen(PATH_TXT, "r");
     char caractere_impresso;
     int conta_linhas_impressao = 1;
 
@@ -980,18 +982,27 @@ void imprime_erros(){
 }
 
 int main() {
-
+    cout << PATH_TXT << "\n";
+    std::ofstream logFile(PATH_LOG);
+    if (!logFile) {
+        std::cerr << "Erro ao abrir o arquivo de log!" << std::endl;
+        return 1;
+    }
+    std::streambuf* coutBuffer = std::cout.rdbuf(); // Salva o buffer padrão
+    std::cout.rdbuf(logFile.rdbuf()); // Redireciona para o arquivo
+    
     //abertura do arquivo fonte
     FILE *file;
     //file = fopen("C:/CodigoParaCompilador.txt", "r");
-    file = fopen("D:/Users/Home/Desktop/CodigoCompilador", "r");
+    file = fopen(PATH_TXT, "r");
     
-
     //tratamento de erro na abertura do arquivo
     if (file == NULL) {
         cout << "Erro ao abrir o arquivo.\n";
         return 1;
     }
+
+    
 
     //chama o analisador sintatico
     AnalisadorSintatico(file);
@@ -1002,5 +1013,7 @@ int main() {
 
 
     fclose(file);
+    std::cout.rdbuf(coutBuffer); // Restaura o buffer padrão
+    logFile.close();
     return 0;
 }
