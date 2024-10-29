@@ -10,13 +10,18 @@
 #include <cctype>
 #include <queue>
 #include <fstream>
+#include <list>
+#include <vector>
+
 
 using namespace std;
+
 
 int contador = 1;
 bool primeiro_token = true;
 
 queue<string> erros;
+vector<Simbolos> tabela;
 string msg_erro;
 
 struct Token {
@@ -24,12 +29,33 @@ struct Token {
     string simbolo;
 };
 
+struct Simbolos {
+    string lexema;
+    string tipo;
+    //string endereco;
+};
+
+bool Pesquisa_Tabela();
 void imprime_codigo_com_linhas();
 void imprime_erros();
 void Analisa_comando_simples(FILE *file, char *caractere, Token &token);
 void Analisa_expressao(FILE *file, char *caractere, Token &token);
 void AnalisaBloco(FILE *file, char *caractere, Token &token);
 void Analisa_comandos(FILE *file, char *caractere, Token &token);
+
+
+bool Pesquisa_Tabela(string lexema){
+    /* perguntar sobre escopo --> esta verificando apenas ate achar o primeiro lexema de func ou procedimento*/
+    for(int iterador=tabela.size()-1 ; iterador>0;iterador--){
+        if(tabela[iterador].tipo == "procedimento" || tabela[iterador].tipo == "função inteiro" || tabela[iterador].tipo == "função booleana"){
+            break;
+        }
+        if(tabela[iterador].tipo == "variavel" && tabela[iterador].lexema == lexema){
+            return true;
+        }
+    }
+    return false;    
+}
 
 void TrataDigito(FILE *file, char *caractere, Token &token){
 
@@ -905,7 +931,10 @@ void AnalisadorSintatico(FILE *file) {
         //se o arquivo de fato comecar com "sprograma", pega mais um token e testa para ver se a variavel programa eh identificada com um identificador
         PegaToken(file, &caractere, token);
         if(token.simbolo == "sidentificador"){
-            cout << token.lexema << "\n";
+            Simbolos simboloPrograma;
+            simboloPrograma.tipo = "nomedeprograma";
+            simboloPrograma.lexema = token.lexema;
+            tabela.push_back(simboloPrograma);
             //se a variavel for identificada com um identificador, testa se a declaracao eh fechada com um ";"
             PegaToken(file, &caractere, token);
             if(token.simbolo == "spontoevirgula"){
