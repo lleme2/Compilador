@@ -16,9 +16,16 @@
 
 using namespace std;
 
-
+string nivel;
 int contador = 1;
 bool primeiro_token = true;
+
+struct Simbolos {
+    string lexema;
+    string tipo;
+    string nivel;
+};
+
 
 queue<string> erros;
 vector<Simbolos> tabela;
@@ -29,13 +36,11 @@ struct Token {
     string simbolo;
 };
 
-struct Simbolos {
-    string lexema;
-    string tipo;
-    //string endereco;
-};
-
-bool Pesquisa_Tabela();
+bool Pesquisa_declaracao_func(string lexema);
+void Desempilhar();
+bool Pesquisa_declaracao_proc(string lexema);
+void Insere_tabela(string lexema, string tipo);
+bool Pesquisa_Variavel_Duplicada(string lexema);
 void imprime_codigo_com_linhas();
 void imprime_erros();
 void Analisa_comando_simples(FILE *file, char *caractere, Token &token);
@@ -43,11 +48,45 @@ void Analisa_expressao(FILE *file, char *caractere, Token &token);
 void AnalisaBloco(FILE *file, char *caractere, Token &token);
 void Analisa_comandos(FILE *file, char *caractere, Token &token);
 
+void Desempilhar(){
+    int iterador = tabela.size() - 1;
+    while (tabela[iterador].nivel == "")
+    {
+        tabela.pop_back();
+    }
+}
 
-bool Pesquisa_Tabela(string lexema){
-    /* perguntar sobre escopo --> esta verificando apenas ate achar o primeiro lexema de func ou procedimento*/
+void Insere_tabela(string lexema, string tipo, string nivel){
+    Simbolos simboloPrograma;
+    simboloPrograma.tipo = tipo;
+    simboloPrograma.lexema = lexema;
+    tabela.push_back(simboloPrograma);
+    return;
+}
+
+bool Pesquisa_declaracao_func(string lexema){
+    //TODO: procedimento tem q ir ate o final da pilha? Pode ter procedimento e funcao com o msm nome?
     for(int iterador=tabela.size()-1 ; iterador>0;iterador--){
-        if(tabela[iterador].tipo == "procedimento" || tabela[iterador].tipo == "função inteiro" || tabela[iterador].tipo == "função booleana"){
+        if(tabela[iterador].lexema == lexema && tabela[iterador].tipo == "funcao booleana" && tabela[iterador].tipo == "funcao inteiro"){
+            return true;
+        }
+    }
+    return false; 
+}
+
+bool Pesquisa_declaracao_proc(string lexema){
+    //TODO: procedimento tem q ir ate o final da pilha? Pode ter procedimento e funcao com o msm nome?
+    for(int iterador=tabela.size()-1 ; iterador>0;iterador--){
+        if(tabela[iterador].lexema == lexema && tabela[iterador].tipo == "procedimento"){
+            return true;
+        }
+    }
+    return false; 
+}
+
+bool Pesquisa_Variavel_Duplicada(string lexema){
+    for(int iterador=tabela.size()-1 ; iterador>0;iterador--){
+        if(tabela[iterador].nivel != ""){
             break;
         }
         if(tabela[iterador].tipo == "variavel" && tabela[iterador].lexema == lexema){
@@ -55,6 +94,18 @@ bool Pesquisa_Tabela(string lexema){
         }
     }
     return false;    
+}
+
+bool Pesquisa_declaracao_variavel(string lexema){
+    int controlador = tabela.size()-1;
+    while(controlador > 0){
+        if(tabela[controlador].lexema == lexema){
+            return true;
+        }
+        else{
+            controlador--;
+        }
+    }
 }
 
 void TrataDigito(FILE *file, char *caractere, Token &token){
@@ -466,6 +517,7 @@ void Analisa_tipo(FILE *file, char *caractere, Token &token){
         exit(1);
     }
     else{
+        //TODO: insere tipo na tabela
         PegaToken(file, caractere, token);
     }
 }
@@ -473,29 +525,35 @@ void Analisa_tipo(FILE *file, char *caractere, Token &token){
 void Analisa_variaveis(FILE *file, char *caractere, Token &token){
 
     do{
-        PegaToken(file, caractere, token);
-        if(token.simbolo == "svirgula" || token.simbolo == "sdoispontos"){
-            if(token.simbolo == "svirgula"){
-                PegaToken(file, caractere, token);
-                if(token.simbolo == "sdoispontos"){
-                    msg_erro = "";
-                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando identificador de variavel apos ','";
-                    erros.push(msg_erro);
-                    imprime_codigo_com_linhas();
-                    imprime_erros();
-                    exit(1);
-                    return;
+        if(!Pesquisa_Variavel_Duplicada(token.lexema)){
+            Insere_tabela(token.lexema, "variável","");
+            PegaToken(file, caractere, token);
+            if(token.simbolo == "svirgula" || token.simbolo == "sdoispontos"){
+                if(token.simbolo == "svirgula"){
+                    PegaToken(file, caractere, token);
+                    if(token.simbolo == "sdoispontos"){
+                        msg_erro = "";
+                        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando identificador de variavel apos ','";
+                        erros.push(msg_erro);
+                        imprime_codigo_com_linhas();
+                        imprime_erros();
+                        exit(1);
+                        return;
+                    }
                 }
+            }
+            else{
+                msg_erro = "";
+                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando ',' ou ':' apos declaracao de variavel";
+                erros.push(msg_erro);
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
+                return;
             }
         }
         else{
-            msg_erro = "";
-            msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando ',' ou ':' apos declaracao de variavel";
-            erros.push(msg_erro);
-            imprime_codigo_com_linhas();
-            imprime_erros();
-            exit(1);
-            return;
+            cout << "\nERRO: Variavel duplicada!";
         }
     }while(token.simbolo != "sdoispontos");
     PegaToken(file, caractere, token);
@@ -538,21 +596,28 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
 
 void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
+    nivel = to_string(tabela.size() - 1); // ultima posicao da pilha
     if(token.simbolo == "sidentificador"){
-        PegaToken(file, caractere, token);
-        if(token.simbolo == "spontoevirgula"){
-            cout << "oi GUITOS " << "\n";
+        //if declaracao proc
+        if(!Pesquisa_declaracao_proc(token.lexema)){
+            Insere_tabela(token.lexema,"procedimento",nivel);
             PegaToken(file, caractere, token);
-            AnalisaBloco(file, caractere, token);
+            if(token.simbolo == "spontoevirgula"){
+                PegaToken(file, caractere, token);
+                AnalisaBloco(file, caractere, token);
+            }
+            else{
+                msg_erro = "";
+                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' na declaracao do procedimento";
+                erros.push(msg_erro);     
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);            
+            }
         }
         else{
-            msg_erro = "";
-            msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' na declaracao do procedimento";
-            erros.push(msg_erro);     
-            imprime_codigo_com_linhas();
-            imprime_erros();
-            exit(1);            
-        }
+            cout << "\nErro na declaracao de procedimento";
+        }   
     }
     else{
         msg_erro = "";
@@ -562,11 +627,15 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
         imprime_erros();
         exit(1);       
     }
+    // funcao desempilha
+    Desempilhar();
 }
 
 void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
+    nivel = to_string(tabela.size() - 1);
     if(token.simbolo == "sidentificador"){
+        // pesquisa declara func
         PegaToken(file, caractere, token);
         if(token.simbolo == "sdoispontos"){
             PegaToken(file, caractere, token);
@@ -821,17 +890,22 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sabreparenteses"){
         PegaToken(file, caractere, token);
         if(token.simbolo == "sidentificador"){
-            PegaToken(file, caractere, token);
-            if(token.simbolo == "sfechaparenteses"){
+            if(Pesquisa_declaracao_variavel(token.lexema)){
                 PegaToken(file, caractere, token);
+                if(token.simbolo == "sfechaparenteses"){
+                    PegaToken(file, caractere, token);
+                }
+                else{
+                    msg_erro = "";
+                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o escreva";
+                    erros.push(msg_erro);
+                    imprime_codigo_com_linhas();
+                    imprime_erros();
+                    exit(1);
+                }
             }
             else{
-                msg_erro = "";
-                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o escreva";
-                erros.push(msg_erro);
-                imprime_codigo_com_linhas();
-                imprime_erros();
-                exit(1);
+                cout << "\nERRO: Variavel nao declarada no comando escreva!";
             }
         }
         else{
@@ -842,6 +916,7 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
             imprime_erros();
             exit(1);
         }
+
     }
     else{
         msg_erro = "";
@@ -931,10 +1006,7 @@ void AnalisadorSintatico(FILE *file) {
         //se o arquivo de fato comecar com "sprograma", pega mais um token e testa para ver se a variavel programa eh identificada com um identificador
         PegaToken(file, &caractere, token);
         if(token.simbolo == "sidentificador"){
-            Simbolos simboloPrograma;
-            simboloPrograma.tipo = "nomedeprograma";
-            simboloPrograma.lexema = token.lexema;
-            tabela.push_back(simboloPrograma);
+            Insere_tabela(token.lexema,"nomedoprograma","");
             //se a variavel for identificada com um identificador, testa se a declaracao eh fechada com um ";"
             PegaToken(file, &caractere, token);
             if(token.simbolo == "spontoevirgula"){
