@@ -36,6 +36,8 @@ struct Token {
     string simbolo;
 };
 
+void ImprimirTabela(const vector<Simbolos>& tabela);
+bool Pesquisa_declaracao_variavel(string lexema);
 bool Pesquisa_declaracao_func(string lexema);
 void Desempilhar();
 bool Pesquisa_declaracao_proc(string lexema);
@@ -48,27 +50,60 @@ void Analisa_expressao(FILE *file, char *caractere, Token &token);
 void AnalisaBloco(FILE *file, char *caractere, Token &token);
 void Analisa_comandos(FILE *file, char *caractere, Token &token);
 
+void ImprimirTabela() {
+    cout << "Tabela de Símbolos:\n";
+    cout << "------------------------\n";
+    cout << "Lexema\tTipo\tNível\n";
+    cout << "------------------------\n";
+    
+    for (const auto& simbolo : tabela) {
+        cout << simbolo.lexema << "\t" << simbolo.tipo << "\t" << simbolo.nivel << "\n";
+    }
+    
+    cout << "------------------------\n";
+}
+
 void Desempilhar(){
+    cout << "\n\n\n";
+    //ImprimirTabela(); 
+    //cout << "Estou na funcao desempilhar" << endl;
     int iterador = tabela.size() - 1;
+    //cout << "Ultimo item tabela: " + tabela.back().lexema << endl;
     while (tabela[iterador].nivel == "")
     {
         tabela.pop_back();
+        iterador--;
+        //cout << "Ultimo item tabela: " + tabela.back().lexema << endl;      
+        ImprimirTabela(); 
     }
+    //cout << "Ta saindo do while" << endl;
+    tabela.pop_back();
+    //ImprimirTabela(); 
+    //cout << "Ultimo item tabela: " + tabela.back().tipo << endl;
 }
 
 void Insere_tabela(string lexema, string tipo, string nivel){
     Simbolos simboloPrograma;
     simboloPrograma.tipo = tipo;
     simboloPrograma.lexema = lexema;
+    simboloPrograma.nivel = nivel;
     tabela.push_back(simboloPrograma);
     return;
 }
 
 bool Pesquisa_declaracao_func(string lexema){
+    ImprimirTabela();
     //TODO: procedimento tem q ir ate o final da pilha? Pode ter procedimento e funcao com o msm nome?
     for(int iterador=tabela.size()-1 ; iterador>0;iterador--){
-        if(tabela[iterador].lexema == lexema && tabela[iterador].tipo == "funcao booleana" && tabela[iterador].tipo == "funcao inteiro"){
-            return true;
+        cout << "Declaracao funcao tipo: " + tabela[iterador].tipo << endl;
+        cout << "Declaracao funcao lexema: " + tabela[iterador].lexema << endl;
+        if(tabela[iterador].lexema == lexema){
+            if(tabela[iterador].tipo == "funcao booleana" || tabela[iterador].tipo == "funcao inteiro" || tabela[iterador].tipo == "procedimento"){
+                return true;
+            }
+            else{
+                continue;
+            }     
         }
     }
     return false; 
@@ -97,15 +132,20 @@ bool Pesquisa_Variavel_Duplicada(string lexema){
 }
 
 bool Pesquisa_declaracao_variavel(string lexema){
+    cout << "Lexema a ser verificado: " + lexema << endl;
+    ImprimirTabela();
     int controlador = tabela.size()-1;
     while(controlador > 0){
-        if(tabela[controlador].lexema == lexema){
+        cout << "Lexema: " + tabela[controlador].lexema << endl;
+        cout << "Tipo: " + tabela[controlador].tipo << endl;
+        if(tabela[controlador].lexema == lexema && tabela[controlador].tipo == "variavel"){
             return true;
         }
         else{
             controlador--;
         }
     }
+    return false;
 }
 
 void TrataDigito(FILE *file, char *caractere, Token &token){
@@ -526,7 +566,7 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
 
     do{
         if(!Pesquisa_Variavel_Duplicada(token.lexema)){
-            Insere_tabela(token.lexema, "variável","");
+            Insere_tabela(token.lexema, "variavel","");
             PegaToken(file, caractere, token);
             if(token.simbolo == "svirgula" || token.simbolo == "sdoispontos"){
                 if(token.simbolo == "svirgula"){
@@ -553,7 +593,7 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
             }
         }
         else{
-            cout << "\nERRO: Variavel duplicada!";
+            cout << "ERRO: Variavel duplicada!" << endl;
         }
     }while(token.simbolo != "sdoispontos");
     PegaToken(file, caractere, token);
@@ -600,6 +640,7 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sidentificador"){
         //if declaracao proc
         if(!Pesquisa_declaracao_proc(token.lexema)){
+            cout << "Procedimento: " + token.lexema << endl;
             Insere_tabela(token.lexema,"procedimento",nivel);
             PegaToken(file, caractere, token);
             if(token.simbolo == "spontoevirgula"){
@@ -636,51 +677,67 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
     nivel = to_string(tabela.size() - 1);
     if(token.simbolo == "sidentificador"){
         // pesquisa declara func
-        PegaToken(file, caractere, token);
-        if(token.simbolo == "sdoispontos"){
+        if(!Pesquisa_declaracao_func(token.lexema)){
+            cout << "\nAnalisa Declaracao Func: Passou pela procura\n";
+            Insere_tabela(token.lexema,"",nivel);
             PegaToken(file, caractere, token);
-            if(token.simbolo == "sinteiro" || token.simbolo == "sbooleano"){
+            if(token.simbolo == "sdoispontos"){
                 PegaToken(file, caractere, token);
-                if(token.simbolo == "spontoevirgula"){
-                    AnalisaBloco(file, caractere, token);
+                if(token.simbolo == "sinteiro" || token.simbolo == "sbooleano"){
+                    if(token.simbolo == "sinteiro"){
+                        tabela[tabela.size() - 1].tipo = "funcao inteiro";
+                    }
+                    else{
+                        tabela[tabela.size() - 1].tipo = "funcao booleana";
+                    }
+                    PegaToken(file, caractere, token);
+                    if(token.simbolo == "spontoevirgula"){
+                        cout << "\nChamada analisa bloco declaracao de funcao";
+                        PegaToken(file, caractere, token);
+                        AnalisaBloco(file, caractere, token);
+                        cout << "Volta do analisa bloco do analisa declaracao de func: " + token.simbolo << endl;
+                    }
+                    else{
+                        msg_erro = "";
+                        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' na declaracao da funcao";
+                        erros.push(msg_erro);
+                        imprime_codigo_com_linhas();
+                        imprime_erros();
+                        exit(1); 
+                    }
                 }
                 else{
                     msg_erro = "";
-                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' na declaracao da funcao";
+                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": parametro da funcao de tipo invalido";
                     erros.push(msg_erro);
                     imprime_codigo_com_linhas();
                     imprime_erros();
-                    exit(1); 
+                    exit(1);                  
                 }
             }
             else{
                 msg_erro = "";
-                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": parametro da funcao de tipo invalido";
+                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ':' apos identificador de funcao";
                 erros.push(msg_erro);
                 imprime_codigo_com_linhas();
                 imprime_erros();
-                exit(1);                  
+                exit(1);             
+            }
+            }
+            else{
+                cout << "Erro: Essa funcao ja existe!" << endl;
             }
         }
         else{
             msg_erro = "";
-            msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ':' apos identificador de funcao";
+            msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificador na declaracao da funcao";
             erros.push(msg_erro);
             imprime_codigo_com_linhas();
             imprime_erros();
-            exit(1);             
-        }
-
+            exit(1); 
     }
-
-    else{
-        msg_erro = "";
-        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificador na declaracao da funcao";
-        erros.push(msg_erro);
-        imprime_codigo_com_linhas();
-        imprime_erros();
-        exit(1); 
-    }
+    Desempilhar();
+    cout << "Volta da funcao desempilhar do analisa declara func" << endl;
 }
 
 void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
@@ -689,10 +746,13 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
             Analisa_declaracao_procedimento(file, caractere, token);
         }
         else{
+            cout << "\n Chegou no analisa declaracao funcao";
             Analisa_declaracao_funcao(file, caractere, token);
         }
+        cout << "if ; do analisa subrotinas: " + token.simbolo << endl;
         if(token.simbolo == "spontoevirgula"){
             PegaToken(file, caractere, token);
+            cout << " Pos if ; do analisa subrotinas: " + token.simbolo << endl;
         }
         else{
             msg_erro = "";
@@ -712,6 +772,7 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
 void Analisa_fator(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sidentificador"){
         PegaToken(file, caractere, token);
+        cout << "Analisa fator indentificador: " + token.simbolo << endl;
         //Analisa_chamada_funcao(file, caractere, token);
     }
     else if(token.simbolo == "snumero"){
@@ -763,7 +824,7 @@ void Analisa_termo(FILE *file, char *caractere, Token &token){
         cout << "Analisa termo com e 2: " << token.lexema << "\n";
         Analisa_fator(file, caractere, token);
         cout << "Analisa termo com e 3: " << token.lexema << "\n";
-    } // satã
+    } 
     cout << "saiu plmds saiu " << token.lexema << "\n";
     return;
 }
@@ -777,6 +838,7 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
     cout << "saiu plmds saiu 2 " << token.lexema << "\n";
     while(token.simbolo == "smais" || token.simbolo == "smenos" || token.simbolo == "sou"){
         PegaToken(file, caractere, token);
+        cout << "saiu plmds saiu 3 " << token.lexema << "\n";
         Analisa_termo(file, caractere, token);
     }
 }
@@ -791,14 +853,16 @@ void Analisa_expressao(FILE *file, char *caractere, Token &token){
         Analisa_expressao_simples(file, caractere, token);
     }
     cout << "Token da expressao normal 2: " << token.lexema << "\n";
+    //PegaToken(file, caractere, token);
 }
 
 void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
+    cout << "Entrada analisa atrb ou procedimento: " + token.lexema << endl;
     PegaToken(file, caractere, token);
-    cout << "Token da atribuicao: " << token.lexema << "\n";
+    cout << "Token da atribuicao: " << token.lexema << endl;
     if(token.simbolo == "satribuicao"){
         PegaToken(file, caractere, token);
-        cout << "Token da possivel atribuicao: " << token.lexema << "\n";
+        cout << "Token da possivel atribuicao: " << token.lexema << endl;
         Analisa_expressao(file, caractere, token);
     }
      
@@ -853,17 +917,22 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sabreparenteses"){
         PegaToken(file, caractere, token);
         if(token.simbolo == "sidentificador"){
-            PegaToken(file, caractere, token);
-            if(token.simbolo == "sfechaparenteses"){
+            if(Pesquisa_declaracao_variavel(token.lexema)){
                 PegaToken(file, caractere, token);
+                if(token.simbolo == "sfechaparenteses"){
+                    PegaToken(file, caractere, token);
+                }
+                else{
+                    msg_erro = "";
+                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o leia";
+                    erros.push(msg_erro);
+                    imprime_codigo_com_linhas();
+                    imprime_erros();
+                    exit(1);
+                }
             }
             else{
-                msg_erro = "";
-                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o leia";
-                erros.push(msg_erro);
-                imprime_codigo_com_linhas();
-                imprime_erros();
-                exit(1);
+                cout << "Erro: Nao existe essa variavel para leitura!" << endl;
             }
         }
         else{
@@ -905,7 +974,7 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
                 }
             }
             else{
-                cout << "\nERRO: Variavel nao declarada no comando escreva!";
+                cout << "ERRO: Variavel nao declarada no comando escreva!" << endl;
             }
         }
         else{
@@ -929,6 +998,7 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_comando_simples(FILE *file, char *caractere, Token &token){
+    cout << "Entrada analisa comando simples: " + token.lexema << endl;
     if (token.simbolo == "sidentificador") {
         Analisa_atrib_chprocedimento(file, caractere, token);
     }
@@ -946,23 +1016,26 @@ void Analisa_comando_simples(FILE *file, char *caractere, Token &token){
     }
     else {
         Analisa_comandos(file, caractere, token);
+        cout << "Voltou do analisa comandos do analisa comandos simples" << endl;
     }
 }
 
 void Analisa_comandos(FILE *file, char *caractere, Token &token){
-    cout << "Analisa Comandos: " << token.simbolo << endl;
+    cout << "\nAnalisa Comandos: " << token.simbolo << endl;
+    //PegaToken(file, caractere, token);
     if(token.simbolo == "sinicio"){
         PegaToken(file, caractere, token);
+        cout << "Analisa Comandos pos inicio: " + token.lexema << endl;
         Analisa_comando_simples(file, caractere, token);
-        cout << "Volta do comando simples do analisa_comandos: " << token.lexema << "\n";
+        cout << "Volta do comando simples do analisa_comandos: " + token.lexema << endl;
         while(token.simbolo != "sfim"){
-            //cout << token.simbolo << endl;
+            cout << "While do analisa comandos: "+ token.simbolo << endl;
             if(token.simbolo == "spontoevirgula"){
                 PegaToken(file, caractere, token);
+                cout << "While do analisa comandos pos if: "+ token.simbolo << endl;
                 if(token.simbolo != "sfim"){
                     Analisa_comando_simples(file, caractere, token);
                 }
-                
             }
             else{
                 msg_erro = "";
@@ -973,7 +1046,9 @@ void Analisa_comandos(FILE *file, char *caractere, Token &token){
                 exit(1);
             }
         }
+        cout << "Pos while do analisa comandos 1: "+ token.simbolo << endl;
         PegaToken(file, caractere, token);
+        cout << "Pos while do analisa comandos 2: "+ token.simbolo << endl;
     }
     else{
         
@@ -984,14 +1059,16 @@ void Analisa_comandos(FILE *file, char *caractere, Token &token){
         imprime_erros();
         exit(1);
     }
+    return;
 }
 
 void AnalisaBloco(FILE *file, char *caractere, Token &token){
 
     Analisa_et_variaveis(file, caractere, token);
     Analisa_subrotinas(file, caractere, token);
+    cout << "Voltou do analisa sub rotinas do analisa bloco: " + token.simbolo << endl;
     Analisa_comandos(file, caractere, token);
-
+    cout << "Voltou do analisa comandos do analisa bloco" << endl;
 }
 
 void AnalisadorSintatico(FILE *file) {
@@ -1012,7 +1089,7 @@ void AnalisadorSintatico(FILE *file) {
             if(token.simbolo == "spontoevirgula"){
                 //se o programa se iniciou com a declaracao correta do programa, passa entao para a analise do bloco de comandos
                 PegaToken(file, &caractere, token);
-                cout << token.simbolo << "\n";
+                cout << "Anlisador Sintatico: " + token.simbolo << "\n";
                 AnalisaBloco(file, &caractere, token);
             }
 
@@ -1111,6 +1188,7 @@ int main() {
 
     imprime_codigo_com_linhas();
     imprime_erros();
+    ImprimirTabela();
 
 
     fclose(file);
