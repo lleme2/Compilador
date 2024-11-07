@@ -36,6 +36,7 @@ struct Token {
     string simbolo;
 };
 
+void Coloca_tipo(string tipo);
 void ImprimirTabela(const vector<Simbolos>& tabela);
 bool Pesquisa_declaracao_variavel(string lexema);
 bool Pesquisa_declaracao_func(string lexema);
@@ -63,22 +64,32 @@ void ImprimirTabela() {
     cout << "------------------------\n";
 }
 
+void Coloca_tipo(string tipo_var){
+    
+    int iterador = tabela.size() - 1;\
+    while (tabela[iterador].tipo == "variavel"){
+        tabela[iterador].tipo = "variavel " + tipo_var;
+        iterador--;
+    }
+}
+
 void Desempilhar(){
+    cout << "Estou na funcao desempilhar" << endl;
     cout << "\n\n\n";
-    //ImprimirTabela(); 
+    ImprimirTabela(); 
     //cout << "Estou na funcao desempilhar" << endl;
     int iterador = tabela.size() - 1;
     //cout << "Ultimo item tabela: " + tabela.back().lexema << endl;
-    while (tabela[iterador].nivel == "")
+    while (tabela[iterador].nivel == "" )
     {
         tabela.pop_back();
         iterador--;
         //cout << "Ultimo item tabela: " + tabela.back().lexema << endl;      
-        ImprimirTabela(); 
+        //ImprimirTabela(); 
     }
     //cout << "Ta saindo do while" << endl;
-    tabela.pop_back();
-    //ImprimirTabela(); 
+    tabela[iterador].nivel = "";
+    ImprimirTabela(); 
     //cout << "Ultimo item tabela: " + tabela.back().tipo << endl;
 }
 
@@ -92,7 +103,7 @@ void Insere_tabela(string lexema, string tipo, string nivel){
 }
 
 bool Pesquisa_declaracao_func(string lexema){
-    ImprimirTabela();
+    //ImprimirTabela();
     //TODO: procedimento tem q ir ate o final da pilha? Pode ter procedimento e funcao com o msm nome?
     for(int iterador=tabela.size()-1 ; iterador>0;iterador--){
         cout << "Declaracao funcao tipo: " + tabela[iterador].tipo << endl;
@@ -135,11 +146,16 @@ bool Pesquisa_declaracao_variavel(string lexema){
     cout << "Lexema a ser verificado: " + lexema << endl;
     ImprimirTabela();
     int controlador = tabela.size()-1;
-    while(controlador > 0){
+    while(tabela[controlador].tipo != "programa"){
         cout << "Lexema: " + tabela[controlador].lexema << endl;
         cout << "Tipo: " + tabela[controlador].tipo << endl;
-        if(tabela[controlador].lexema == lexema && tabela[controlador].tipo == "variavel"){
-            return true;
+        if(tabela[controlador].lexema == lexema){
+            if(tabela[controlador].tipo == "variavel sinteiro" || tabela[controlador].tipo == "variavel sbooleano"){
+               return true;
+            }
+            else{
+                continue;
+            }
         }
         else{
             controlador--;
@@ -558,6 +574,7 @@ void Analisa_tipo(FILE *file, char *caractere, Token &token){
     }
     else{
         //TODO: insere tipo na tabela
+        Coloca_tipo(token.simbolo);
         PegaToken(file, caractere, token);
     }
 }
@@ -636,9 +653,9 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
 
 void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
-    nivel = to_string(tabela.size() - 1); // ultima posicao da pilha
+    string nivel = "X"; // colocar X ao inves de utlima posicao
     if(token.simbolo == "sidentificador"){
-        //if declaracao proc
+        //marquinha
         if(!Pesquisa_declaracao_proc(token.lexema)){
             cout << "Procedimento: " + token.lexema << endl;
             Insere_tabela(token.lexema,"procedimento",nivel);
@@ -674,7 +691,7 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
 
 void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
-    nivel = to_string(tabela.size() - 1);
+    string nivel = "X";
     if(token.simbolo == "sidentificador"){
         // pesquisa declara func
         if(!Pesquisa_declaracao_func(token.lexema)){
@@ -1029,7 +1046,7 @@ void Analisa_comandos(FILE *file, char *caractere, Token &token){
         Analisa_comando_simples(file, caractere, token);
         cout << "Volta do comando simples do analisa_comandos: " + token.lexema << endl;
         while(token.simbolo != "sfim"){
-            cout << "While do analisa comandos: "+ token.simbolo << endl;
+            cout << "While do analisa comandos: "+ token.lexema << endl;
             if(token.simbolo == "spontoevirgula"){
                 PegaToken(file, caractere, token);
                 cout << "While do analisa comandos pos if: "+ token.simbolo << endl;
@@ -1184,11 +1201,11 @@ int main() {
 
     //chama o analisador sintatico
     AnalisadorSintatico(file);
-
+    //Desempilhar();
 
     imprime_codigo_com_linhas();
     imprime_erros();
-    ImprimirTabela();
+    //ImprimirTabela();
 
 
     fclose(file);
