@@ -102,6 +102,17 @@ void Insere_tabela(string lexema, string tipo, string nivel){
     return;
 }
 
+string Pesquisa_tipo(string lexema){
+    int controlador = tabela.size()-1;
+    while(tabela[controlador].tipo != "nomedoprograma"){
+        if(tabela[controlador].lexema == lexema){
+            return tabela[controlador].tipo;
+        }
+        controlador--;
+    }
+    return "NaN";
+}
+
 bool Pesquisa_declaracao_func(string lexema){
     //ImprimirTabela();
     //TODO: procedimento tem q ir ate o final da pilha? Pode ter procedimento e funcao com o msm nome?
@@ -131,24 +142,27 @@ bool Pesquisa_declaracao_proc(string lexema){
 }
 
 bool Pesquisa_Variavel_Duplicada(string lexema){
-    for(int iterador=tabela.size()-1 ; iterador>0;iterador--){
-        if(tabela[iterador].nivel != ""){
-            break;
+    int iterador = tabela.size() - 1;
+    cout << "Iterador: "<< iterador << endl;
+    while(tabela[iterador].nivel != "X" && iterador > 0){
+        cout << "Pesquisa var duplicada: " + tabela[iterador].lexema << endl;
+        if(tabela[iterador].lexema == lexema){
+            if(tabela[iterador].tipo == "variavel sinteiro" || tabela[iterador].tipo == "variavel sbooleano"){
+                return true;
+            }
         }
-        if(tabela[iterador].tipo == "variavel" && tabela[iterador].lexema == lexema){
-            return true;
-        }
+        iterador--;
     }
-    return false;    
+    return false;
 }
 
 bool Pesquisa_declaracao_variavel(string lexema){
-    cout << "Lexema a ser verificado: " + lexema << endl;
+    cout << "Lexema a ser verificado no escreva: " + lexema << endl;
     ImprimirTabela();
     int controlador = tabela.size()-1;
-    while(tabela[controlador].tipo != "programa"){
-        cout << "Lexema: " + tabela[controlador].lexema << endl;
-        cout << "Tipo: " + tabela[controlador].tipo << endl;
+    while(tabela[controlador].tipo != "nomedoprograma"){
+        cout << "Lexema ESCREVA: " + tabela[controlador].lexema << endl;
+        cout << "Tipo ESCREVA: " + tabela[controlador].tipo << endl;
         if(tabela[controlador].lexema == lexema){
             if(tabela[controlador].tipo == "variavel sinteiro" || tabela[controlador].tipo == "variavel sbooleano"){
                return true;
@@ -157,9 +171,7 @@ bool Pesquisa_declaracao_variavel(string lexema){
                 continue;
             }
         }
-        else{
-            controlador--;
-        }
+        controlador--;
     }
     return false;
 }
@@ -611,6 +623,10 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
         }
         else{
             cout << "ERRO: Variavel duplicada!" << endl;
+            //PegaToken(file, caractere, token); Se n tiver isso tem loop ininito, falta tratar o erro decentemente
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);
         }
     }while(token.simbolo != "sdoispontos");
     PegaToken(file, caractere, token);
@@ -674,7 +690,10 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
             }
         }
         else{
-            cout << "\nErro na declaracao de procedimento";
+            cout << "\nErro: na declaracao de procedimento";
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);
         }   
     }
     else{
@@ -743,6 +762,9 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
             }
             else{
                 cout << "Erro: Essa funcao ja existe!" << endl;
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
             }
         }
         else{
@@ -788,8 +810,16 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
 
 void Analisa_fator(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sidentificador"){
-        PegaToken(file, caractere, token);
-        cout << "Analisa fator indentificador: " + token.simbolo << endl;
+        if(Pesquisa_declaracao_func(token.lexema) || Pesquisa_declaracao_variavel(token.lexema)){
+            PegaToken(file, caractere, token);
+            cout << "Analisa fator indentificador: " + token.simbolo << endl;
+        }
+        else{
+            cout << "Erro: Uso de variavel ou funcao nao declarada na expressao" << endl;
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);
+        }
         //Analisa_chamada_funcao(file, caractere, token);
     }
     else if(token.simbolo == "snumero"){
@@ -861,8 +891,9 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_expressao(FILE *file, char *caractere, Token &token){
+    cout << "Token da expressao normal 1: " << token.lexema << "\n";
     Analisa_expressao_simples(file, caractere, token);
-    cout << "Token da expressao normal: " << token.lexema << "\n";
+    cout << "Token da expressao normal 2: " << token.lexema << "\n";
     while(token.simbolo == "smaior" || token.simbolo == "smaiorig" || token.simbolo == "sig" || token.simbolo == "smenor" || token.simbolo == "smenorig" || token.simbolo == "sdif"){
         cout << "Token TESTE: " << token.simbolo << "\n";
         PegaToken(file, caractere, token);
@@ -875,14 +906,37 @@ void Analisa_expressao(FILE *file, char *caractere, Token &token){
 
 void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
     cout << "Entrada analisa atrb ou procedimento: " + token.lexema << endl;
+    string tipo_entrada = Pesquisa_tipo(token.lexema);
     PegaToken(file, caractere, token);
-    cout << "Token da atribuicao: " << token.lexema << endl;
-    if(token.simbolo == "satribuicao"){
+    cout << "Tipo entrada: " << tipo_entrada << endl;
+    if (token.simbolo == "satribuicao")
+    {
         PegaToken(file, caractere, token);
+        string tipo_saida = Pesquisa_tipo(token.lexema);
+        cout << "Tipo saida: " << tipo_saida << endl;
+    }
+    string tipo_saida = Pesquisa_tipo(token.lexema);
+    if (tipo_entrada != tipo_saida)
+    {
+        if ((tipo_entrada == "variavel sinteiro" && tipo_saida == "funcao inteiro") || (tipo_entrada == "variavel sbooleano" && tipo_saida == "funcao booleana"))
+        {
+            cout << "Token da possivel atribuicao: " << token.lexema << endl;
+            Analisa_expressao(file, caractere, token);
+        }
+        else
+        {
+            cout << "Erro: Tipos diferentes em uma atribuicao!" << endl;
+            imprime_codigo_com_linhas();
+            imprime_erros();
+            exit(1);
+        }
+    }
+    else
+    {
         cout << "Token da possivel atribuicao: " << token.lexema << endl;
         Analisa_expressao(file, caractere, token);
     }
-     
+
     /*else{
         Chamada_procedimento(file, caractere, token);
     }*/
@@ -935,14 +989,22 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
         PegaToken(file, caractere, token);
         if(token.simbolo == "sidentificador"){
             if(Pesquisa_declaracao_variavel(token.lexema)){
-                PegaToken(file, caractere, token);
-                if(token.simbolo == "sfechaparenteses"){
+                if(Pesquisa_tipo(token.lexema) == "variavel sinteiro"){
                     PegaToken(file, caractere, token);
+                    if(token.simbolo == "sfechaparenteses"){
+                        PegaToken(file, caractere, token);
+                    }
+                    else{
+                        msg_erro = "";
+                        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o leia";
+                        erros.push(msg_erro);
+                        imprime_codigo_com_linhas();
+                        imprime_erros();
+                        exit(1);
+                    }
                 }
                 else{
-                    msg_erro = "";
-                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o leia";
-                    erros.push(msg_erro);
+                    cout << "Erro: Tipo de variavel para leitura incorreto!" << endl;
                     imprime_codigo_com_linhas();
                     imprime_erros();
                     exit(1);
@@ -950,6 +1012,9 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
             }
             else{
                 cout << "Erro: Nao existe essa variavel para leitura!" << endl;
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
             }
         }
         else{
@@ -977,14 +1042,22 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
         PegaToken(file, caractere, token);
         if(token.simbolo == "sidentificador"){
             if(Pesquisa_declaracao_variavel(token.lexema)){
-                PegaToken(file, caractere, token);
-                if(token.simbolo == "sfechaparenteses"){
+                if(Pesquisa_tipo(token.lexema) == "variavel sinteiro"){
                     PegaToken(file, caractere, token);
+                    if(token.simbolo == "sfechaparenteses"){
+                        PegaToken(file, caractere, token);
+                    }
+                    else{
+                        msg_erro = "";
+                        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o escreva";
+                        erros.push(msg_erro);
+                        imprime_codigo_com_linhas();
+                        imprime_erros();
+                        exit(1);
+                    }
                 }
                 else{
-                    msg_erro = "";
-                    msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o escreva";
-                    erros.push(msg_erro);
+                    cout << "Erro: Tipo de variavel para leitura incorreto!" << endl;
                     imprime_codigo_com_linhas();
                     imprime_erros();
                     exit(1);
@@ -992,6 +1065,10 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
             }
             else{
                 cout << "ERRO: Variavel nao declarada no comando escreva!" << endl;
+                //PegaToken(file, caractere, token);
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
             }
         }
         else{
