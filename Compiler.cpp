@@ -16,9 +16,13 @@
 #include <fstream>
 #include <list>
 #include <vector>
+#include <deque>
 
 
 using namespace std;
+
+string saida_pos_fixa;
+deque<string> pilha_pos_fixa;
 
 string nivel;
 int contador = 1;
@@ -815,7 +819,7 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
 void Analisa_fator(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sidentificador"){
         if(Pesquisa_declaracao_func(token.lexema) || Pesquisa_declaracao_variavel(token.lexema)){
-            
+            saida_pos_fixa.append(token.lexema);
             PegaToken(file, caractere, token);
             cout << "Analisa fator indentificador: " + token.simbolo << endl;
         }
@@ -828,7 +832,7 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         //Analisa_chamada_funcao(file, caractere, token);
     }
     else if(token.simbolo == "snumero"){
-
+        saida_pos_fixa.append(token.lexema);
         cout << "Numero do fator: " << token.lexema << "\n";
         PegaToken(file, caractere, token);
         cout << "Numero do fator 2: " << token.simbolo << "\n";
@@ -838,10 +842,20 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         Analisa_fator(file, caractere, token);
     }
     else if(token.simbolo == "sabreparenteses"){
+        pilha_pos_fixa.push_front(token.lexema);
         PegaToken(file, caractere, token);
         Analisa_expressao(file, caractere, token);
-       cout << "Voltando do analisa expressao do ( : " << token.lexema << "\n";
+        cout << "Voltando do analisa expressao do ( : " << token.lexema << "\n";
         if(token.simbolo == "sfechaparenteses"){
+            string controle_pilha_pos_fixa = "";
+            while(controle_pilha_pos_fixa != "("){
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                pilha_pos_fixa.pop_front();
+                if(controle_pilha_pos_fixa != "("){
+                    saida_pos_fixa.append(controle_pilha_pos_fixa);
+                }
+                
+            }
             PegaToken(file, caractere, token);
              cout << "Voltando do if fecha parent : " << token.lexema << "\n";
         }
