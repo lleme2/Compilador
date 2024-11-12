@@ -1,7 +1,11 @@
-#define PATH_COMPILER "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler.cpp"
+#define PATH_COMPILER "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/Compiler.cpp"
+#define PATH_LOG "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/log.txt"
+#define PATH_TXT "C:/CodigoParaCompilador.txt"
+
+/*#define PATH_COMPILER "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler.cpp"
 #define PATH_OUTPUT "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler"
 #define PATH_LOG "d:/Users/Home/Documents/GitHub/demo/Compilador/log.txt"
-#define PATH_TXT "D:/Users/Home/Desktop/CodigoCompilador.txt"
+#define PATH_TXT "D:/Users/Home/Desktop/CodigoCompilador.txt"*/
 
 #include <stdio.h>
 #include <iostream>
@@ -160,7 +164,7 @@ bool Pesquisa_declaracao_variavel(string lexema){
     cout << "Lexema a ser verificado no escreva: " + lexema << endl;
     ImprimirTabela();
     int controlador = tabela.size()-1;
-    while(tabela[controlador].tipo != "nomedoprograma"){
+    while(tabela[controlador].nivel != "X"){
         cout << "Lexema ESCREVA: " + tabela[controlador].lexema << endl;
         cout << "Tipo ESCREVA: " + tabela[controlador].tipo << endl;
         if(tabela[controlador].lexema == lexema){
@@ -811,6 +815,7 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
 void Analisa_fator(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sidentificador"){
         if(Pesquisa_declaracao_func(token.lexema) || Pesquisa_declaracao_variavel(token.lexema)){
+            
             PegaToken(file, caractere, token);
             cout << "Analisa fator indentificador: " + token.simbolo << endl;
         }
@@ -823,6 +828,7 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         //Analisa_chamada_funcao(file, caractere, token);
     }
     else if(token.simbolo == "snumero"){
+
         cout << "Numero do fator: " << token.lexema << "\n";
         PegaToken(file, caractere, token);
         cout << "Numero do fator 2: " << token.simbolo << "\n";
