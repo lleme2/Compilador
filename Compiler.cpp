@@ -44,6 +44,8 @@ struct Token {
     string simbolo;
 };
 
+
+
 void Coloca_tipo(string tipo);
 void ImprimirTabela(const vector<Simbolos>& tabela);
 bool Pesquisa_declaracao_variavel(string lexema);
@@ -79,6 +81,22 @@ void Coloca_tipo(string tipo_var){
         tabela[iterador].tipo = "variavel " + tipo_var;
         iterador--;
     }
+}
+
+int precedencia(string op) {
+    if (op == "+" || op == "-") {
+        return 3;
+    } else if (op == "*" || op == "div") {
+        return 4;
+    } else if (op == ">" || op == ">=" || op == "<" || op == "<=") {
+        return 2; // Parênteses têm a menor precedência
+    } else if(op == "e" || op == "ou" || op == "nao"){
+        return 1;
+    }
+    else{
+        return 5;
+    }
+    return -1;
 }
 
 void Desempilhar(){
@@ -838,6 +856,18 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         cout << "Numero do fator 2: " << token.simbolo << "\n";
     }
     else if (token.simbolo == "snao"){
+        int preced = precedencia(token.lexema);
+        string controle_pilha_pos_fixa = "";
+            for(int controle = pilha_pos_fixa.size() - 1; controle > 0; controle--){
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                if(precedencia(controle_pilha_pos_fixa) >= preced){
+                    pilha_pos_fixa.pop_front();
+                    saida_pos_fixa.append(controle_pilha_pos_fixa);
+                }
+                else if(controle_pilha_pos_fixa == "("){
+                    break;
+                }
+            }
         PegaToken(file, caractere, token);
         Analisa_fator(file, caractere, token);
     }
@@ -886,6 +916,18 @@ void Analisa_termo(FILE *file, char *caractere, Token &token){
     Analisa_fator(file, caractere, token);
     cout << "Analisa termo : " << token.simbolo << "\n";
     while(token.simbolo == "smult" || token.simbolo == "sdiv" || token.simbolo == "se"){
+        int preced = precedencia(token.lexema);
+        string controle_pilha_pos_fixa = "";
+            for(int controle = pilha_pos_fixa.size() - 1; controle > 0; controle--){
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                if(precedencia(controle_pilha_pos_fixa) >= preced){
+                    pilha_pos_fixa.pop_front();
+                    saida_pos_fixa.append(controle_pilha_pos_fixa);
+                }
+                else if(controle_pilha_pos_fixa == "("){
+                    break;
+                }
+            }
         cout << "Analisa termo com e 1: " << token.simbolo << "\n";
         PegaToken(file, caractere, token);
         cout << "Analisa termo com e 2: " << token.lexema << "\n";
@@ -899,11 +941,36 @@ void Analisa_termo(FILE *file, char *caractere, Token &token){
 void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
     cout << "Simbolo expressao simples: " << token.lexema << "\n";
     if(token.simbolo == "smais" || token.simbolo == "smenos"){
+        // positivo ou negativo tratar na pos fixa: precedencia("GUITOS NOSSO REI")
+        int preced = precedencia("positivo ou negativo");
+        string controle_pilha_pos_fixa = "";
+            for(int controle = pilha_pos_fixa.size() - 1; controle > 0; controle--){
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                if(precedencia(controle_pilha_pos_fixa) >= preced){
+                    pilha_pos_fixa.pop_front();
+                    saida_pos_fixa.append(controle_pilha_pos_fixa);
+                }
+                else if(controle_pilha_pos_fixa == "("){
+                    break;
+                }
+            }
         PegaToken(file, caractere, token);
     }
     Analisa_termo(file, caractere, token);
     cout << "saiu plmds saiu 2 " << token.lexema << "\n";
     while(token.simbolo == "smais" || token.simbolo == "smenos" || token.simbolo == "sou"){
+        int preced = precedencia(token.lexema);
+        string controle_pilha_pos_fixa = "";
+            for(int controle = pilha_pos_fixa.size() - 1; controle > 0; controle--){
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                if(precedencia(controle_pilha_pos_fixa) >= preced){
+                    pilha_pos_fixa.pop_front();
+                    saida_pos_fixa.append(controle_pilha_pos_fixa);
+                }
+                else if(controle_pilha_pos_fixa == "("){
+                    break;
+                }
+            }
         PegaToken(file, caractere, token);
         cout << "saiu plmds saiu 3 " << token.lexema << "\n";
         Analisa_termo(file, caractere, token);
