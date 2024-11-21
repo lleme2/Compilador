@@ -1002,7 +1002,7 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
         string tipo_saida = Pesquisa_tipo(token.lexema);
         cout << "Tipo saida: " << tipo_saida << endl;
     }
-    string tipo_saida = Pesquisa_tipo(token.lexema);
+    string tipo_saida = Pesquisa_tipo(token.lexema); // macaquice?
     if (tipo_entrada != tipo_saida)
     {
         if ((tipo_entrada == "variavel sinteiro" && tipo_saida == "funcao inteiro") || (tipo_entrada == "variavel sbooleano" && tipo_saida == "funcao booleana"))
