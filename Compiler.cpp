@@ -83,20 +83,31 @@ void Coloca_tipo(string tipo_var){
     }
 }
 
-int precedencia(string op) {
+int precedencia_aritmetica(string op) {
     if (op == "+" || op == "-") {
-        return 3;
+        return 1;
     } else if (op == "*" || op == "div") {
-        return 4;
-    } else if (op == ">" || op == ">=" || op == "<" || op == "<=") {
-        return 2; // Parênteses têm a menor precedência
-    } else if(op == "e" || op == "ou" || op == "nao"){
+        return 2;
+    } else if (op == "positivo ou negativo") {
+        return 3;
+    }
+    else{
+        return -1;
+    }
+}
+
+int precedencia_logica(string op) {
+    if (op == "nao") {
+        return 3;
+    } else if (op == "e") {
+        return 2;
+    }
+    else if (op == "ou") {
         return 1;
     }
     else{
-        return 5;
+        return -1;
     }
-    return -1;
 }
 
 void Desempilhar(){
@@ -856,18 +867,14 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         cout << "Numero do fator 2: " << token.simbolo << "\n";
     }
     else if (token.simbolo == "snao"){
-        int preced = precedencia(token.lexema);
+        int preced = precedencia_aritmetica(token.lexema);
         string controle_pilha_pos_fixa = "";
-            for(int controle = pilha_pos_fixa.size() - 1; controle > 0; controle--){
-                controle_pilha_pos_fixa = pilha_pos_fixa.front();
-                if(precedencia(controle_pilha_pos_fixa) >= preced){
-                    pilha_pos_fixa.pop_front();
-                    saida_pos_fixa.append(controle_pilha_pos_fixa);
-                }
-                else if(controle_pilha_pos_fixa == "("){
-                    break;
-                }
-            }
+        controle_pilha_pos_fixa = pilha_pos_fixa.front();
+        if(precedencia_aritmetica(controle_pilha_pos_fixa) >= preced){
+            pilha_pos_fixa.pop_front();
+            saida_pos_fixa.append(controle_pilha_pos_fixa);
+        }
+        pilha_pos_fixa.push_front(token.lexema);
         PegaToken(file, caractere, token);
         Analisa_fator(file, caractere, token);
     }
@@ -916,18 +923,28 @@ void Analisa_termo(FILE *file, char *caractere, Token &token){
     Analisa_fator(file, caractere, token);
     cout << "Analisa termo : " << token.simbolo << "\n";
     while(token.simbolo == "smult" || token.simbolo == "sdiv" || token.simbolo == "se"){
-        int preced = precedencia(token.lexema);
-        string controle_pilha_pos_fixa = "";
-            for(int controle = pilha_pos_fixa.size() - 1; controle > 0; controle--){
-                controle_pilha_pos_fixa = pilha_pos_fixa.front();
-                if(precedencia(controle_pilha_pos_fixa) >= preced){
-                    pilha_pos_fixa.pop_front();
-                    saida_pos_fixa.append(controle_pilha_pos_fixa);
-                }
-                else if(controle_pilha_pos_fixa == "("){
-                    break;
-                }
+        if(token.simbolo == "smult" || token.simbolo == "sdiv"){
+            int preced = precedencia_aritmetica(token.lexema);
+            string controle_pilha_pos_fixa = "";
+            controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            if(precedencia_aritmetica(controle_pilha_pos_fixa) >= preced){
+                pilha_pos_fixa.pop_front();
+                saida_pos_fixa.append(controle_pilha_pos_fixa);
             }
+            pilha_pos_fixa.push_front(token.lexema);
+        }
+        else if(token.simbolo == "se"){
+            int preced = precedencia_logica(token.lexema);
+            string controle_pilha_pos_fixa = "";
+            controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            if(precedencia_logica(controle_pilha_pos_fixa) >= preced){
+                pilha_pos_fixa.pop_front();
+                saida_pos_fixa.append(controle_pilha_pos_fixa);
+            }
+            pilha_pos_fixa.push_front(token.lexema);
+        }
+
+
         cout << "Analisa termo com e 1: " << token.simbolo << "\n";
         PegaToken(file, caractere, token);
         cout << "Analisa termo com e 2: " << token.lexema << "\n";
@@ -942,35 +959,40 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
     cout << "Simbolo expressao simples: " << token.lexema << "\n";
     if(token.simbolo == "smais" || token.simbolo == "smenos"){
         // positivo ou negativo tratar na pos fixa: precedencia("GUITOS NOSSO REI")
-        int preced = precedencia("positivo ou negativo");
+        int preced = precedencia_aritmetica("positivo ou negativo");
         string controle_pilha_pos_fixa = "";
-            for(int controle = pilha_pos_fixa.size() - 1; controle > 0; controle--){
-                controle_pilha_pos_fixa = pilha_pos_fixa.front();
-                if(precedencia(controle_pilha_pos_fixa) >= preced){
-                    pilha_pos_fixa.pop_front();
-                    saida_pos_fixa.append(controle_pilha_pos_fixa);
-                }
-                else if(controle_pilha_pos_fixa == "("){
-                    break;
-                }
-            }
+        controle_pilha_pos_fixa = pilha_pos_fixa.front();
+        if(precedencia_aritmetica(controle_pilha_pos_fixa) >= preced){
+            pilha_pos_fixa.pop_front();
+            saida_pos_fixa.append(controle_pilha_pos_fixa);
+        }
+        pilha_pos_fixa.push_front(token.lexema);
         PegaToken(file, caractere, token);
     }
     Analisa_termo(file, caractere, token);
     cout << "saiu plmds saiu 2 " << token.lexema << "\n";
     while(token.simbolo == "smais" || token.simbolo == "smenos" || token.simbolo == "sou"){
-        int preced = precedencia(token.lexema);
-        string controle_pilha_pos_fixa = "";
-            for(int controle = pilha_pos_fixa.size() - 1; controle > 0; controle--){
-                controle_pilha_pos_fixa = pilha_pos_fixa.front();
-                if(precedencia(controle_pilha_pos_fixa) >= preced){
-                    pilha_pos_fixa.pop_front();
-                    saida_pos_fixa.append(controle_pilha_pos_fixa);
-                }
-                else if(controle_pilha_pos_fixa == "("){
-                    break;
-                }
+        if(token.simbolo == "smais" || token.simbolo == "smenos"){
+            int preced = precedencia_aritmetica(token.lexema);
+            string controle_pilha_pos_fixa = "";
+            controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            if(precedencia_aritmetica(controle_pilha_pos_fixa) >= preced){
+                pilha_pos_fixa.pop_front();
+                saida_pos_fixa.append(controle_pilha_pos_fixa);
             }
+            pilha_pos_fixa.push_front(token.lexema);
+        }
+        else if(token.simbolo == "sou"){
+            int preced = precedencia_logica(token.lexema);
+            string controle_pilha_pos_fixa = "";
+            controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            if(precedencia_logica(controle_pilha_pos_fixa) >= preced){
+                pilha_pos_fixa.pop_front();
+                saida_pos_fixa.append(controle_pilha_pos_fixa);
+            }
+            pilha_pos_fixa.push_front(token.lexema);
+        }
+
         PegaToken(file, caractere, token);
         cout << "saiu plmds saiu 3 " << token.lexema << "\n";
         Analisa_termo(file, caractere, token);
@@ -978,14 +1000,28 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_expressao(FILE *file, char *caractere, Token &token){
+    saida_pos_fixa = "";
     cout << "Token da expressao normal 1: " << token.lexema << "\n";
     Analisa_expressao_simples(file, caractere, token);
     cout << "Token da expressao normal 2: " << token.lexema << "\n";
     while(token.simbolo == "smaior" || token.simbolo == "smaiorig" || token.simbolo == "sig" || token.simbolo == "smenor" || token.simbolo == "smenorig" || token.simbolo == "sdif"){
+        string controle_pilha_pos_fixa = "";
+        controle_pilha_pos_fixa = pilha_pos_fixa.front();
+        if(controle_pilha_pos_fixa == "smaior" || controle_pilha_pos_fixa == "smaiorig" || controle_pilha_pos_fixa == "sig" || controle_pilha_pos_fixa == "smenor" || controle_pilha_pos_fixa == "smenorig" || controle_pilha_pos_fixa == "sdif"){
+            pilha_pos_fixa.pop_front();
+            saida_pos_fixa.append(controle_pilha_pos_fixa);
+        }
+        pilha_pos_fixa.push_front(token.lexema);
         cout << "Token TESTE: " << token.simbolo << "\n";
         PegaToken(file, caractere, token);
         cout << "Token TESTE: " << token.simbolo << "\n";
         Analisa_expressao_simples(file, caractere, token);
+    }
+    while(!pilha_pos_fixa.empty()){
+        string controle_pilha_pos_fixa = "";
+        controle_pilha_pos_fixa = pilha_pos_fixa.front();
+        pilha_pos_fixa.pop_front();
+        saida_pos_fixa.append(controle_pilha_pos_fixa);
     }
     cout << "Token da expressao normal 2: " << token.lexema << "\n";
     //PegaToken(file, caractere, token);
@@ -1370,6 +1406,8 @@ int main() {
     imprime_codigo_com_linhas();
     imprime_erros();
     //ImprimirTabela();
+
+    cout << endl << endl << saida_pos_fixa;
 
 
     fclose(file);
