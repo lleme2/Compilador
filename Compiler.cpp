@@ -1,11 +1,11 @@
-/*#define PATH_COMPILER "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/Compiler.cpp"
+#define PATH_COMPILER "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/Compiler.cpp"
 #define PATH_LOG "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/log.txt"
-#define PATH_TXT "C:/CodigoParaCompilador.txt"*/
+#define PATH_TXT "C:/CodigoParaCompilador.txt"
 
-#define PATH_COMPILER "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler.cpp"
+/*#define PATH_COMPILER "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler.cpp"
 #define PATH_OUTPUT "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler"
 #define PATH_LOG "d:/Users/Home/Documents/GitHub/demo/Compilador/log.txt"
-#define PATH_TXT "D:/Users/Home/Desktop/CodigoCompilador.txt"
+#define PATH_TXT "D:/Users/Home/Desktop/CodigoCompilador.txt"*/
 
 #include <stdio.h>
 #include <iostream>
@@ -96,21 +96,18 @@ void Coloca_tipo(string tipo_var){
     }
 }
 
-int precedencia_aritmetica(string op) {
-    if (op == "+" || op == "-") {
-        return 1;
+int precedencia(string op) {
+    if (op == "positivo ou negativo") {
+        return 7;
     } else if (op == "*" || op == "div") {
-        return 2;
-    } else if (op == "positivo ou negativo") {
-        return 3;
+        return 6;
+    } else if (op == "+" || op == "-") {
+        return 5;
     }
-    else{
-        return -1;
+    else if(op == ">" || op == ">=" || op == "=" || op == "<" || op == "<=" || op == "!="){
+        return 4;
     }
-}
-
-int precedencia_logica(string op) {
-    if (op == "nao") {
+    else if (op == "nao") {
         return 3;
     } else if (op == "e") {
         return 2;
@@ -122,6 +119,7 @@ int precedencia_logica(string op) {
         return -1;
     }
 }
+
 
 void Desempilhar(){
     cout << "Estou na funcao desempilhar" << endl;
@@ -222,7 +220,7 @@ bool Pesquisa_declaracao_variavel(string lexema){
     //ImprimirTabela();
     int controlador = tabela.size()-1;
     if(controlador > 0){
-        while(tabela[controlador].nivel != "X"){
+        while(tabela[controlador].tipo != "nomedoprograma"){
             //cout << "Lexema ESCREVA: " + tabela[controlador].lexema << endl;
             //cout << "Tipo ESCREVA: " + tabela[controlador].tipo << endl;
             if(tabela[controlador].lexema == lexema){
@@ -896,12 +894,20 @@ cout << saida_pos_fixa << endl;
         cout << "Numero do fator 2: " << token.simbolo << "\n";
     }
     else if (token.simbolo == "snao"){
-        int preced = precedencia_aritmetica(token.lexema);
-        string controle_pilha_pos_fixa = "";
-        controle_pilha_pos_fixa = pilha_pos_fixa.front();
-        if(precedencia_aritmetica(controle_pilha_pos_fixa) >= preced){
-            pilha_pos_fixa.pop_front();
-            saida_pos_fixa.append(controle_pilha_pos_fixa);
+        if(!pilha_pos_fixa.empty()){
+            cout << "Saida da pilha sou: " << saida_pos_fixa << endl;
+            ImprimeDeque(pilha_pos_fixa);
+            int preced = precedencia(token.lexema);
+            string controle_pilha_pos_fixa = "";
+            controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            cout << "precedencia lexema: " << preced << endl;
+            cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
+            while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
+                cout << "VO DAR POP HEIN" << endl;
+                pilha_pos_fixa.pop_front();
+                saida_pos_fixa.append(controle_pilha_pos_fixa);
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            }
         }
         ImprimeDeque(pilha_pos_fixa);
         cout << saida_pos_fixa << endl;
@@ -970,12 +976,20 @@ cout << saida_pos_fixa << endl;
 cout << saida_pos_fixa << endl;
     while(token.simbolo == "smult" || token.simbolo == "sdiv" || token.simbolo == "se"){
         if(token.simbolo == "smult" || token.simbolo == "sdiv"){
-            int preced = precedencia_aritmetica(token.lexema);
-            string controle_pilha_pos_fixa = "";
-            controle_pilha_pos_fixa = pilha_pos_fixa.front();
-            if(precedencia_aritmetica(controle_pilha_pos_fixa) >= preced){
-                pilha_pos_fixa.pop_front();
-                saida_pos_fixa.append(controle_pilha_pos_fixa);
+            if(!pilha_pos_fixa.empty()){
+                cout << "Saida da pilha sou: " << saida_pos_fixa << endl;
+                ImprimeDeque(pilha_pos_fixa);
+                int preced = precedencia(token.lexema);
+                string controle_pilha_pos_fixa = "";
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                cout << "precedencia lexema: " << preced << endl;
+                cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
+                while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
+                    cout << "VO DAR POP HEIN" << endl;
+                    pilha_pos_fixa.pop_front();
+                    saida_pos_fixa.append(controle_pilha_pos_fixa);
+                    controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                }
             }
             ImprimeDeque(pilha_pos_fixa);
             cout << saida_pos_fixa << endl;
@@ -983,12 +997,20 @@ cout << saida_pos_fixa << endl;
         }
         else if(token.simbolo == "se"){
             cout << "Saida da pilha se: " << saida_pos_fixa << endl;
-            int preced = precedencia_logica(token.lexema);
-            string controle_pilha_pos_fixa = "";
-            controle_pilha_pos_fixa = pilha_pos_fixa.front();
-            if(precedencia_logica(controle_pilha_pos_fixa) >= preced){
-                pilha_pos_fixa.pop_front();
-                saida_pos_fixa.append(controle_pilha_pos_fixa);
+            if(!pilha_pos_fixa.empty()){
+                cout << "Saida da pilha sou: " << saida_pos_fixa << endl;
+                ImprimeDeque(pilha_pos_fixa);
+                int preced = precedencia(token.lexema);
+                string controle_pilha_pos_fixa = "";
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                cout << "precedencia lexema: " << preced << endl;
+                cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
+                while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
+                    cout << "VO DAR POP HEIN" << endl;
+                    pilha_pos_fixa.pop_front();
+                    saida_pos_fixa.append(controle_pilha_pos_fixa);
+                    controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                }
             }
             ImprimeDeque(pilha_pos_fixa);
             cout << saida_pos_fixa << endl;
@@ -1014,12 +1036,20 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
     cout << saida_pos_fixa << endl;
     if(token.simbolo == "smais" || token.simbolo == "smenos"){
         // positivo ou negativo tratar na pos fixa: precedencia("GUITOS NOSSO REI")
-        int preced = precedencia_aritmetica("positivo ou negativo");
-        string controle_pilha_pos_fixa = "";
-        controle_pilha_pos_fixa = pilha_pos_fixa.front();
-        if(precedencia_aritmetica(controle_pilha_pos_fixa) >= preced){
-            pilha_pos_fixa.pop_front();
-            saida_pos_fixa.append(controle_pilha_pos_fixa);
+        if(!pilha_pos_fixa.empty()){
+            cout << "Saida da pilha sou: " << saida_pos_fixa << endl;
+            ImprimeDeque(pilha_pos_fixa);
+            int preced = precedencia("positivo ou negativo");
+            string controle_pilha_pos_fixa = "";
+            controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            cout << "precedencia lexema: " << preced << endl;
+            cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
+            while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
+                cout << "VO DAR POP HEIN" << endl;
+                pilha_pos_fixa.pop_front();
+                saida_pos_fixa.append(controle_pilha_pos_fixa);
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            }
         }
         ImprimeDeque(pilha_pos_fixa);
         cout << saida_pos_fixa << endl;
@@ -1033,13 +1063,18 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
     while(token.simbolo == "smais" || token.simbolo == "smenos" || token.simbolo == "sou"){
         if(token.simbolo == "smais" || token.simbolo == "smenos"){
             if(!pilha_pos_fixa.empty()){
-                cout << "Saida da pilha smais e smenos: " << saida_pos_fixa << endl;
-                int preced = precedencia_aritmetica(token.lexema); 
+                cout << "Saida da pilha sou: " << saida_pos_fixa << endl;
+                ImprimeDeque(pilha_pos_fixa);
+                int preced = precedencia(token.lexema);
                 string controle_pilha_pos_fixa = "";
                 controle_pilha_pos_fixa = pilha_pos_fixa.front();
-                if(precedencia_aritmetica(controle_pilha_pos_fixa) >= preced){
+                cout << "precedencia lexema: " << preced << endl;
+                cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
+                while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
+                    cout << "VO DAR POP HEIN" << endl;
                     pilha_pos_fixa.pop_front();
                     saida_pos_fixa.append(controle_pilha_pos_fixa);
+                    controle_pilha_pos_fixa = pilha_pos_fixa.front();
                 }
             }
             pilha_pos_fixa.push_front(token.lexema);
@@ -1050,15 +1085,16 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
             if(!pilha_pos_fixa.empty()){
                 cout << "Saida da pilha sou: " << saida_pos_fixa << endl;
                 ImprimeDeque(pilha_pos_fixa);
-                int preced = precedencia_logica(token.lexema);
+                int preced = precedencia(token.lexema);
                 string controle_pilha_pos_fixa = "";
                 controle_pilha_pos_fixa = pilha_pos_fixa.front();
                 cout << "precedencia lexema: " << preced << endl;
-                cout << "precedencia topo da pilha: " << precedencia_logica(controle_pilha_pos_fixa) << endl;
-                if(preced >= precedencia_logica(controle_pilha_pos_fixa)){
+                cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
+                while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
                     cout << "VO DAR POP HEIN" << endl;
                     pilha_pos_fixa.pop_front();
                     saida_pos_fixa.append(controle_pilha_pos_fixa);
+                    controle_pilha_pos_fixa = pilha_pos_fixa.front();
                 }
             }
             pilha_pos_fixa.push_front(token.lexema);
@@ -1082,14 +1118,20 @@ void Analisa_expressao(FILE *file, char *caractere, Token &token){
     ImprimeDeque(pilha_pos_fixa);
 cout << saida_pos_fixa << endl;
     while(token.simbolo == "smaior" || token.simbolo == "smaiorig" || token.simbolo == "sig" || token.simbolo == "smenor" || token.simbolo == "smenorig" || token.simbolo == "sdif"){
-        string controle_pilha_pos_fixa = "";
-        controle_pilha_pos_fixa = pilha_pos_fixa.front();
-        cout << "Topo da pilha analisa_expressao: " << controle_pilha_pos_fixa << endl;
-        if(controle_pilha_pos_fixa == "smaior" || controle_pilha_pos_fixa == "smaiorig" || controle_pilha_pos_fixa == "sig" || controle_pilha_pos_fixa == "smenor" || controle_pilha_pos_fixa == "smenorig" || controle_pilha_pos_fixa == "sdif"){
-            pilha_pos_fixa.pop_front();
-            saida_pos_fixa.append(controle_pilha_pos_fixa);
+        if(!pilha_pos_fixa.empty()){
+            cout << "Saida da pilha sou: " << saida_pos_fixa << endl;
             ImprimeDeque(pilha_pos_fixa);
-        cout << saida_pos_fixa << endl;
+            int preced = precedencia(token.lexema);
+            string controle_pilha_pos_fixa = "";
+            controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            cout << "precedencia lexema: " << preced << endl;
+            cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
+            while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
+                cout << "VO DAR POP HEIN" << endl;
+                pilha_pos_fixa.pop_front();
+                saida_pos_fixa.append(controle_pilha_pos_fixa);
+                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            }
         }
         ImprimeDeque(pilha_pos_fixa);
         cout << saida_pos_fixa << endl;
@@ -1177,6 +1219,7 @@ void Analisa_enquanto(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
     Analisa_expressao(file, caractere, token);
     Desempilha_posfixa();
+    cout << endl << endl << saida_pos_fixa;
     if(token.simbolo == "sfaca"){
         PegaToken(file, caractere, token);
         
@@ -1220,7 +1263,7 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
                 }
             }
             else{
-                cout << "Erro: Nao existe essa variavel para leitura!" << endl;
+                cout << contador << "Erro: Nao existe essa variavel para leitura!" << endl;
                 imprime_codigo_com_linhas();
                 imprime_erros();
                 exit(1);
