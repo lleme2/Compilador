@@ -867,7 +867,11 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
 
 //void Analisa_chamada_funcao(FILE *file, char *caractere, Token &token){}
 
-//void Chamada_procedimento(FILE *file, char *caractere, Token &token){}
+void Chamada_procedimento(FILE *file, char *caractere, Token &token){
+    if(!Pesquisa_declaracao_proc(token.lexema)){
+        cout << "ERRO: Procedimento não declarado!";
+    }
+}
 
 void Analisa_fator(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sidentificador"){
@@ -1159,36 +1163,37 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
         PegaToken(file, caractere, token);
         string tipo_saida = Pesquisa_tipo(token.lexema);
         cout << "Tipo saida: " << tipo_saida << endl;
-    }
-    string tipo_saida = Pesquisa_tipo(token.lexema); // macaquice?
-    
-    if (tipo_entrada != tipo_saida && tipo_saida != "NaN")
-    {
-        cout << "Token da possivel atribuicao 1: " << token.lexema << endl;
-        if ((tipo_entrada == "variavel sinteiro" && tipo_saida == "funcao inteiro") || (tipo_entrada == "variavel sbooleano" && tipo_saida == "funcao booleana"))
+        if (tipo_entrada != tipo_saida && tipo_saida != "NaN")
         {
-            cout << "Token da possivel atribuicao 2: " << token.lexema << endl;
-            Analisa_expressao(file, caractere, token);
-            Desempilha_posfixa();
+            cout << "Token da possivel atribuicao 1: " << token.lexema << endl;
+            if ((tipo_entrada == "variavel sinteiro" && tipo_saida == "funcao inteiro") || (tipo_entrada == "variavel sbooleano" && tipo_saida == "funcao booleana"))
+            {
+                cout << "Token da possivel atribuicao 2: " << token.lexema << endl;
+                Analisa_expressao(file, caractere, token);
+                Desempilha_posfixa();
+            }
+            else if((tipo_entrada == "funcao inteiro" && tipo_saida == "variavel sinteiro") || (tipo_entrada == "funcao booleana" && tipo_saida == "variavel sbooleano")){
+                cout << contador << " Erro: Tentando atribuir variaveis a uma funcao" << endl;
+            }
+            else
+            {
+                cout << contador << " Erro: Tipos diferentes em uma atribuicao!" << endl;
+                imprime_codigo_com_linhas();
+                imprime_erros();
+                exit(1);
+            }
         }
         else
         {
-            cout << "Erro: Tipos diferentes em uma atribuicao!" << endl;
-            imprime_codigo_com_linhas();
-            imprime_erros();
-            exit(1);
+            cout << "Token da possivel atribuicao: " << token.lexema << endl;
+            Analisa_expressao(file, caractere, token);
+            Desempilha_posfixa();
         }
     }
-    else
-    {
-        cout << "Token da possivel atribuicao: " << token.lexema << endl;
-        Analisa_expressao(file, caractere, token);
-        Desempilha_posfixa();
-    }
 
-    /*else{
+    else{
         Chamada_procedimento(file, caractere, token);
-    }*/
+    }
 }
 
 void Analisa_se(FILE *file, char *caractere, Token &token){
