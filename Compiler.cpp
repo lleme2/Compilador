@@ -67,6 +67,13 @@ string TipoPosFixa();
 string verificarTipoExpressao();
 
 
+void printVector() {
+    for(int i=0;i<saida_pos_fixa.size();i++){
+        cout << saida_pos_fixa[i]<< " ";
+    }
+    cout << endl;
+}
+
 template <typename T>
 void ImprimeDeque(const std::deque<T>& dq) {
     std::cout << "Conteúdo do deque (reverso): [";
@@ -998,9 +1005,10 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
             int preced = precedencia(token.lexema);
             string controle_pilha_pos_fixa = "";
             controle_pilha_pos_fixa = pilha_pos_fixa.front();
+            int preced_controle = precedencia(controle_pilha_pos_fixa);
             cout << "precedencia lexema: " << preced << endl;
-            cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
-            while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
+            cout << "precedencia topo da pilha: " << preced_controle << endl;
+            while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty() && preced != -1 && preced_controle != -1 && controle_pilha_pos_fixa != "("){
                 cout << "VO DAR POP HEIN 1" << endl;
                 pilha_pos_fixa.pop_front();
                 saida_pos_fixa.push_back(controle_pilha_pos_fixa);
@@ -1026,13 +1034,13 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         cout << "Voltando do analisa expressao do ( : " << token.lexema << "\n";
         if(token.simbolo == "sfechaparenteses"){
             string controle_pilha_pos_fixa = "";
-            while(controle_pilha_pos_fixa != "("){
+            while(controle_pilha_pos_fixa != "(" && !pilha_pos_fixa.empty()){
                 cout << "Pilha dentro do fecha parenteses: " << endl;
                 ImprimeDeque(pilha_pos_fixa);
                 //cout << saida_pos_fixa << endl;.push_back
                 controle_pilha_pos_fixa = pilha_pos_fixa.front();
                 pilha_pos_fixa.pop_front();
-                if(controle_pilha_pos_fixa != "("){
+                if(controle_pilha_pos_fixa != "(" && !pilha_pos_fixa.empty()){
                     saida_pos_fixa.push_back(controle_pilha_pos_fixa);
                 }
             }
@@ -1065,7 +1073,11 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_termo(FILE *file, char *caractere, Token &token){
-    cout << "Analisa termo : " << token.lexema << "\n"; 
+    cout << "Analisa termo : " << token.lexema << "\n";
+    for(int i=0;i<saida_pos_fixa.size();i++){
+        cout << saida_pos_fixa[i]<< " ";
+    }
+    cout << endl;
     ImprimeDeque(pilha_pos_fixa);
 //cout << saida_pos_fixa << endl;.push_back
     Analisa_fator(file, caractere, token);
@@ -1101,9 +1113,10 @@ void Analisa_termo(FILE *file, char *caractere, Token &token){
                 int preced = precedencia(token.lexema);
                 string controle_pilha_pos_fixa = "";
                 controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                int preced_controle = precedencia(controle_pilha_pos_fixa);
                 cout << "precedencia lexema: " << preced << endl;
-                cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
-                while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
+                cout << "precedencia topo da pilha: " << preced_controle << endl;
+                while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty() && preced != -1 && preced_controle != -1 && controle_pilha_pos_fixa != "("){
                     cout << "VO DAR POP HEIN 3" << endl;
                     pilha_pos_fixa.pop_front();
                     saida_pos_fixa.push_back(controle_pilha_pos_fixa);
@@ -1119,6 +1132,10 @@ void Analisa_termo(FILE *file, char *caractere, Token &token){
         cout << "Analisa termo com e 1: " << token.simbolo << "\n";
         PegaToken(file, caractere, token);
         cout << "Analisa termo com e 2: " << token.lexema << "\n";
+        for(int i=0;i<saida_pos_fixa.size();i++){
+        cout << saida_pos_fixa[i]<< " ";
+        }
+        cout << endl;
         Analisa_fator(file, caractere, token);
         cout << "Analisa termo com e 3: " << token.lexema << "\n";
         ImprimeDeque(pilha_pos_fixa);
@@ -1141,8 +1158,9 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
             string controle_pilha_pos_fixa = "";
             controle_pilha_pos_fixa = pilha_pos_fixa.front();
             cout << "precedencia lexema: " << preced << endl;
-            cout << "precedencia topo da pilha: " << precedencia(controle_pilha_pos_fixa) << endl;
-            while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty()){
+            int preced_controle = precedencia(controle_pilha_pos_fixa);
+            cout << "precedencia topo da pilha: " << preced_controle << endl;
+            while(precedencia(controle_pilha_pos_fixa) >= preced && !pilha_pos_fixa.empty() && preced != -1 && preced_controle != -1 && controle_pilha_pos_fixa != "("){
                 cout << "VO DAR POP HEIN 4" << endl;
                 pilha_pos_fixa.pop_front();
                 saida_pos_fixa.push_back(controle_pilha_pos_fixa);
@@ -1158,6 +1176,10 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
     cout << "saiu plmds saiu 2 " << token.lexema << "\n";
     ImprimeDeque(pilha_pos_fixa);
     //cout << saida_pos_fixa << endl;.push_back
+    for(int i=0;i<saida_pos_fixa.size();i++){
+        cout << saida_pos_fixa[i]<< " ";
+    }
+    cout << endl;
     while(token.simbolo == "smais" || token.simbolo == "smenos" || token.simbolo == "sou"){
         if(token.simbolo == "smais" || token.simbolo == "smenos"){
             if(!pilha_pos_fixa.empty()){
@@ -1169,7 +1191,7 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
                 int preced_controle = precedencia(controle_pilha_pos_fixa);
                 cout << "precedencia lexema " << token.lexema << ": " << preced << endl;
                 cout << "precedencia topo da pilha: " << preced_controle << endl;
-                while(preced_controle >= preced && preced != -1 && preced_controle != -1){
+                while(preced_controle >= preced && preced != -1 && preced_controle != -1 && controle_pilha_pos_fixa != "("){
                             cout << "VO DAR POP HEIN 5" << endl;
                             pilha_pos_fixa.pop_front();
                             saida_pos_fixa.push_back(controle_pilha_pos_fixa);
@@ -1193,7 +1215,7 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
                 int preced_controle = precedencia(controle_pilha_pos_fixa);
                 cout << "precedencia lexema: " << preced << endl;
                 cout << "precedencia topo da pilha: " << preced_controle << endl;
-                while(preced_controle >= preced && !pilha_pos_fixa.empty() && preced != -1 && preced_controle != -1){
+                while(preced_controle >= preced && !pilha_pos_fixa.empty() && preced != -1 && preced_controle != -1 && controle_pilha_pos_fixa != "("){
                     cout << "VO DAR POP HEIN 6" << endl;
                     pilha_pos_fixa.pop_front();
                     saida_pos_fixa.push_back(controle_pilha_pos_fixa);
@@ -1233,14 +1255,16 @@ void Analisa_expressao(FILE *file, char *caractere, Token &token){
             int preced_controle = precedencia(controle_pilha_pos_fixa);
             cout << "precedencia lexema: " << preced << endl;
             cout << "precedencia topo da pilha: " << preced_controle << endl;
-            while(preced_controle >= preced && !pilha_pos_fixa.empty() && !pilha_pos_fixa.empty() && preced != -1 && preced_controle != -1){
+            while(preced_controle >= preced && !pilha_pos_fixa.empty() && preced != -1 && preced_controle != -1 && controle_pilha_pos_fixa != "("){
                 cout << "VO DAR POP HEIN 7" << endl;
                 pilha_pos_fixa.pop_front();
+                ImprimeDeque(pilha_pos_fixa);
                 saida_pos_fixa.push_back(controle_pilha_pos_fixa);
-                if (pilha_pos_fixa.empty()){
-                                break;
-                            }
-                controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                printVector();
+                if(!pilha_pos_fixa.empty()){
+                    controle_pilha_pos_fixa = pilha_pos_fixa.front();
+                }
+                
             }
         }
         ImprimeDeque(pilha_pos_fixa);
@@ -1306,13 +1330,15 @@ void Analisa_se(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
     Analisa_expressao(file, caractere, token);
     Desempilha_posfixa();
+    cout << "Saida do analisa expresao do se: " << token.lexema << endl;
     if(token.simbolo == "sentao"){
         PegaToken(file, caractere, token);
         Analisa_comando_simples(file, caractere, token);
-        cout << "Token dps do analisa comando simples SE: " << token.lexema << "\n";
+        cout << "Token dps do analisa comando simples ENTAO: " << token.lexema << "\n";
         if(token.simbolo == "ssenao"){
             PegaToken(file, caractere, token);
             Analisa_comando_simples(file, caractere, token);
+            cout << "Token dps do analisa comando simples SENAO: " << token.lexema << "\n";
         }
     }
     else{
@@ -1409,6 +1435,10 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
                     PegaToken(file, caractere, token);
                     if(token.simbolo == "sfechaparenteses"){
                         PegaToken(file, caractere, token);
+                        cout << "Pos pega token do IF fehca parenteses escreva: " << token.lexema << endl;
+                        /*if(token.simbolo == "sdoispontos"){
+                            PegaToken(file, caractere, token);
+                        }*/
                     }
                     else{
                         msg_erro = "";
@@ -1471,6 +1501,10 @@ void Analisa_comando_simples(FILE *file, char *caractere, Token &token){
     else if (token.simbolo == "sescreva") {
         Analisa_escreva(file, caractere, token);
     }
+    /*else if(token.simbolo == "ssenao"){
+        PegaToken(file, caractere, token);
+        Analisa_comando_simples(file, caractere, token);
+    }*/
     else {
         Analisa_comandos(file, caractere, token);
         cout << "Voltou do analisa comandos do analisa comandos simples" << endl;
