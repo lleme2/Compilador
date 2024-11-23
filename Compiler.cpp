@@ -1,11 +1,13 @@
 /*#define PATH_COMPILER "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/Compiler.cpp"
 #define PATH_LOG "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/log.txt"
-#define PATH_TXT "C:/CodigoParaCompilador.txt"*/
+#define PATH_TXT "C:/CodigoParaCompilador.txt"
+#define PATH_GERA "C:\\-----PUCCAMPINAS----\\8 SEMESTRE\\Compiladores\\Compilador\\gera.txt"*/
 
 #define PATH_COMPILER "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler.cpp"
 #define PATH_OUTPUT "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler"
 #define PATH_LOG "d:/Users/Home/Documents/GitHub/demo/Compilador/log.txt"
 #define PATH_TXT "D:/Users/Home/Desktop/CodigoCompilador.txt"
+#define PATH_GERA "d:/Users/Home/Documents/GitHub/demo/Compilador/gera.txt"
 
 #include <stdio.h>
 #include <iostream>
@@ -27,6 +29,9 @@ vector<string> saida_pos_fixa;
 deque<string> pilha_pos_fixa;
 string tipo_posfixa = "";
 
+int rotulo = 1;
+int s = 1; // pensar sobre comando START
+
 string nivel;
 int contador = 1;
 bool primeiro_token = true;
@@ -35,6 +40,7 @@ struct Simbolos {
     string lexema;
     string tipo;
     string nivel;
+    int endereco;
 };
 
 
@@ -47,7 +53,7 @@ struct Token {
     string simbolo;
 };
 
-
+void Gera_Expressao();
 string Pesquisa_tipo(string lexema);
 void Coloca_tipo(string tipo);
 void ImprimirTabela(const vector<Simbolos>& tabela);
@@ -89,11 +95,11 @@ void ImprimeDeque(const std::deque<T>& dq) {
 void ImprimirTabela() {
     cout << "Tabela de Símbolos:\n";
     cout << "------------------------\n";
-    cout << "Lexema\tTipo\tNível\n";
+    cout << "Lexema\tTipo\tNível\tEndereco\n";
     cout << "------------------------\n";
     
     for (const auto& simbolo : tabela) {
-        cout << simbolo.lexema << "\t" << simbolo.tipo << "\t" << simbolo.nivel << "\n";
+        cout << simbolo.lexema << "\t" << simbolo.tipo << "\t" << simbolo.nivel << "\t" << simbolo.endereco << "\n";
     }
     
     cout << "------------------------\n";
@@ -167,6 +173,7 @@ void Desempilha_posfixa(){
         cout << saida_pos_fixa[i]<< " ";
     }
     cout << endl;
+    Gera_Expressao();
     saida_pos_fixa.clear();
 }
 
@@ -253,11 +260,12 @@ string TipoPosFixa() {
     }
 }
 
-void Insere_tabela(string lexema, string tipo, string nivel){
+void Insere_tabela(string lexema, string tipo, string nivel, int endereco){
     Simbolos simboloPrograma;
     simboloPrograma.tipo = tipo;
     simboloPrograma.lexema = lexema;
     simboloPrograma.nivel = nivel;
+    simboloPrograma.endereco = endereco;
     tabela.push_back(simboloPrograma);
     return;
 }
@@ -271,6 +279,17 @@ string Pesquisa_tipo(string lexema){
         controlador--;
     }
     return "NaN";
+}
+
+int Pesquisa_endereco(string lexema){
+    int controlador = tabela.size()-1;
+    while(tabela[controlador].tipo != "nomedoprograma"){
+        if(tabela[controlador].lexema == lexema){
+            return tabela[controlador].endereco;
+        }
+        controlador--;
+    }
+    return -1;
 }
 
 bool Pesquisa_declaracao_func(string lexema){
@@ -737,6 +756,115 @@ void PegaToken(FILE *file, char *caractere, Token &token){
 
 }
 
+void GERA(string rotulo_escrita, string instrucao, int parametro1, int parametro2){
+
+    cout << "ENTROU NO GERA COM A INSTRUCAO: " << instrucao << endl;
+
+    ofstream arquivo_geracao(PATH_GERA, ios::app); // Modo append
+    if (!arquivo_geracao.is_open()) {
+        cerr << "Não foi possível abrir o arquivo!" << endl;
+        return;
+    }
+    // alloc 1,2
+
+    if(rotulo_escrita != ""){
+        arquivo_geracao << rotulo_escrita << " ";
+    }
+    if(instrucao != ""){
+        arquivo_geracao << instrucao << " ";
+    }
+    if(parametro1 != NULL){
+        arquivo_geracao << parametro1 << " ";
+    }
+    if(parametro2 != NULL){
+        arquivo_geracao << ", " << parametro2;
+    }
+
+    arquivo_geracao << endl;
+
+    arquivo_geracao.close();
+
+}
+
+void Gera_Expressao(){
+    cout << endl << endl << endl << endl << "CHEGUEI NO GERA EXPRESSAO";
+    string controle;
+        for (int i = 0; i < saida_pos_fixa.size(); i++)
+        {
+            controle = saida_pos_fixa[i];
+            saida_pos_fixa.pop_back();
+            cout << controle << " ";
+            if (controle == ">")
+            {
+                GERA("", "CMA", NULL, NULL);
+            }
+            else if (controle == ">=")
+            {
+                GERA("", "CMAQ", NULL, NULL);
+            }
+            else if (controle == "=")
+            {
+                GERA("", "CEQ", NULL, NULL);
+            }
+            else if (controle == "<")
+            {
+                GERA("", "CME", NULL, NULL);
+            }
+            else if (controle == "<=")
+            {
+                GERA("", "CMEQ", NULL, NULL);
+            }
+            else if (controle == "!=")
+            {
+                GERA("", "CDIF", NULL, NULL);
+            }
+            else if (controle == "+")
+            {
+                GERA("", "ADD", NULL, NULL);
+            }
+            else if (controle == "-")
+            {
+                GERA("", "SUB", NULL, NULL);
+            }
+            else if (controle == "*")
+            {
+                GERA("", "MULT", NULL, NULL);
+            }
+            else if (controle == "div")
+            {
+                GERA("", "DIVI", NULL, NULL);
+            }
+            else if (controle == "e")
+            {
+                GERA("", "AND", NULL, NULL);
+            }
+            else if (controle == "ou")
+            {
+                GERA("", "OR", NULL, NULL);
+            }
+            else if (controle == "nao")
+            {
+                GERA("", "NEG", NULL, NULL);
+            }
+            else
+            {
+                if (IsDigit(controle))
+                {
+                    GERA("", "LDC", stoi(controle), NULL);
+                }
+                else if (IsLetter(controle))
+                {
+                    GERA("", "LDV", Pesquisa_endereco(controle), NULL);
+                    /*Na hora de mostrar na UI, n é pra aparecer o endereco da variavel e sim a variavel
+                    errado: LDV 5 --> o codigo gerado
+                    certo: LDV x --> é o q tem q ser mostrado no UI
+                    */
+                }
+            }
+        }
+    cout << endl << endl << endl << endl;
+}
+
 void Analisa_tipo(FILE *file, char *caractere, Token &token){
     if(token.simbolo != "sinteiro" && token.simbolo != "sbooleano"){
         msg_erro = "";
@@ -754,10 +882,13 @@ void Analisa_tipo(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_variaveis(FILE *file, char *caractere, Token &token){
-
+    int qtd_variaveis = 0;
+    int start_point = s;
     do{
         if(!Pesquisa_Variavel_Duplicada(token.lexema)){
-            Insere_tabela(token.lexema, "variavel","");
+            Insere_tabela(token.lexema, "variavel","", s);
+            qtd_variaveis++;
+            s++;
             PegaToken(file, caractere, token);
             if(token.simbolo == "svirgula" || token.simbolo == "sdoispontos"){
                 if(token.simbolo == "svirgula"){
@@ -791,6 +922,7 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
             exit(1);
         }
     }while(token.simbolo != "sdoispontos");
+    GERA("", "ALLOC", start_point, qtd_variaveis);
     PegaToken(file, caractere, token);
     Analisa_tipo(file, caractere, token);
 }
@@ -836,7 +968,8 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
         //marquinha
         if(!Pesquisa_declaracao_proc(token.lexema)){
             cout << "Procedimento: " + token.lexema << endl;
-            Insere_tabela(token.lexema,"procedimento",nivel);
+            Insere_tabela(token.lexema,"procedimento",nivel,rotulo);
+            rotulo++;
             PegaToken(file, caractere, token);
             if(token.simbolo == "spontoevirgula"){
                 PegaToken(file, caractere, token);
@@ -877,7 +1010,8 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
         // pesquisa declara func
         if(!Pesquisa_declaracao_func(token.lexema)){
             cout << "\nAnalisa Declaracao Func: Passou pela procura\n";
-            Insere_tabela(token.lexema,"",nivel);
+            Insere_tabela(token.lexema,"",nivel,rotulo);
+            rotulo++;
             PegaToken(file, caractere, token);
             if(token.simbolo == "sdoispontos"){
                 PegaToken(file, caractere, token);
@@ -1327,18 +1461,29 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_se(FILE *file, char *caractere, Token &token){
+    int salva_rotulo;
     PegaToken(file, caractere, token);
     Analisa_expressao(file, caractere, token);
     Desempilha_posfixa();
+    salva_rotulo = rotulo;
     cout << "Saida do analisa expresao do se: " << token.lexema << endl;
+    GERA("","JMPF",salva_rotulo,NULL);
+    rotulo++;
     if(token.simbolo == "sentao"){
         PegaToken(file, caractere, token);
         Analisa_comando_simples(file, caractere, token);
         cout << "Token dps do analisa comando simples ENTAO: " << token.lexema << "\n";
         if(token.simbolo == "ssenao"){
+            int salva_rotulo_entao = rotulo;
+            GERA("","JMP",salva_rotulo_entao,NULL);
+            GERA(to_string(salva_rotulo),"NULL",NULL,NULL);
             PegaToken(file, caractere, token);
             Analisa_comando_simples(file, caractere, token);
+            GERA(to_string(salva_rotulo_entao),"NULL",NULL,NULL);
             cout << "Token dps do analisa comando simples SENAO: " << token.lexema << "\n";
+        }
+        else{
+            GERA(to_string(salva_rotulo),"NULL",NULL,NULL);
         }
     }
     else{
@@ -1353,14 +1498,21 @@ void Analisa_se(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_enquanto(FILE *file, char *caractere, Token &token){
+    int salva_rotulo_enquanto = rotulo;
+    rotulo++;
+    GERA(to_string(salva_rotulo_enquanto),"NULL",NULL,NULL);
     PegaToken(file, caractere, token);
     Analisa_expressao(file, caractere, token);
     Desempilha_posfixa();
+    int salva_rotulo_saida_enquanto = rotulo;
+    rotulo++;
+    GERA("","JMPF",salva_rotulo_saida_enquanto,NULL);
     //cout << endl << endl << saida_pos_fixa;
     if(token.simbolo == "sfaca"){
         PegaToken(file, caractere, token);
-        
         Analisa_comando_simples(file, caractere, token);
+        GERA("","JMP",salva_rotulo_enquanto,NULL);
+        GERA(to_string(salva_rotulo_saida_enquanto),"NULL",NULL,NULL);
     }
     else{
         msg_erro = "";
@@ -1373,10 +1525,12 @@ void Analisa_enquanto(FILE *file, char *caractere, Token &token){
 }
 
 void Analisa_leia(FILE *file, char *caractere, Token &token){
+    GERA("", "RD", NULL, NULL);
     PegaToken(file, caractere, token);
     if(token.simbolo == "sabreparenteses"){
         PegaToken(file, caractere, token);
         if(token.simbolo == "sidentificador"){
+            GERA("","STR",Pesquisa_endereco(token.lexema),NULL);
             if(Pesquisa_declaracao_variavel(token.lexema)){
                 if(Pesquisa_tipo(token.lexema) == "variavel sinteiro" || Pesquisa_tipo(token.lexema) == "variavel sbooleano"){
                     PegaToken(file, caractere, token);
@@ -1430,6 +1584,7 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
     if(token.simbolo == "sabreparenteses"){
         PegaToken(file, caractere, token);
         if(token.simbolo == "sidentificador"){
+            GERA("","LDV",Pesquisa_endereco(token.lexema),NULL);
             if(Pesquisa_declaracao_variavel(token.lexema)){
                 if(Pesquisa_tipo(token.lexema) == "variavel sinteiro"){
                     PegaToken(file, caractere, token);
@@ -1482,6 +1637,7 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
         imprime_erros();
         exit(1);
     }
+    GERA("","PRN",NULL,NULL); 
 }
 
 void Analisa_comando_simples(FILE *file, char *caractere, Token &token){
@@ -1574,14 +1730,16 @@ void AnalisadorSintatico(FILE *file) {
         //se o arquivo de fato comecar com "sprograma", pega mais um token e testa para ver se a variavel programa eh identificada com um identificador
         PegaToken(file, &caractere, token);
         if(token.simbolo == "sidentificador"){
-            Insere_tabela(token.lexema,"nomedoprograma","");
+            Insere_tabela(token.lexema,"nomedoprograma","",NULL);
             //se a variavel for identificada com um identificador, testa se a declaracao eh fechada com um ";"
             PegaToken(file, &caractere, token);
             if(token.simbolo == "spontoevirgula"){
+                GERA("", "START", NULL, NULL);
                 //se o programa se iniciou com a declaracao correta do programa, passa entao para a analise do bloco de comandos
                 PegaToken(file, &caractere, token);
                 cout << "Anlisador Sintatico: " + token.simbolo << "\n";
                 AnalisaBloco(file, &caractere, token);
+                GERA("", "HLT", NULL, NULL);
             }
 
             //se faltou ";" na declaracao do programa, coloca na fila uma mensagem de erro
@@ -1652,6 +1810,14 @@ void imprime_erros(){
 
 int main() {
     cout << PATH_TXT << "\n";
+     ofstream APAGA_GERA(PATH_GERA, ios::out); // Abre no modo de escrita padrão (apaga todo o conteúdo)
+    if (!APAGA_GERA.is_open()) {
+        cerr << "Não foi possível abrir o arquivo!" << endl;
+        return 0;
+    }
+    // Como o arquivo foi aberto no modo de escrita, ele já está vazio
+    APAGA_GERA.close(); // Fecha o arquivo
+
     std::ofstream logFile(PATH_LOG);
     if (!logFile) {
         std::cerr << "Erro ao abrir o arquivo de log!" << std::endl;
