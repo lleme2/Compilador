@@ -1448,19 +1448,25 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
             else if(tipo_entrada == "funcao inteiro" || tipo_entrada == "funcao booleana"){
                 Analisa_expressao(file, caractere, token);
                 // marca
-                /*if((tipo_entrada == "funcao inteiro" && TipoPosFixa() != "int") || (tipo_entrada == "funcao booleana" && TipoPosFixa() != "bool")){
+                if((tipo_entrada == "funcao inteiro" && TipoPosFixa() != "int") || (tipo_entrada == "funcao booleana" && TipoPosFixa() != "bool")){
                     cout << contador << " Erro: Tipo invalido atribuicao" << endl;
                     exit(1);
-                }*/
+                }
                 Desempilha_posfixa();
                 GERA("","STR",0,NULL);
             }//
-            else{
-                //ImprimirTabela();
+            else{ // se o 1 termo da expressao dps do atribuicao for igual ao tipo de entrada, cai aqui
                 Analisa_expressao(file, caractere, token);
+            if(!pilha_pos_fixa.empty()){ // tem q ver se essa merda faz sentido msm
+                while (!pilha_pos_fixa.empty())
+                {
+                    saida_pos_fixa.push_back(pilha_pos_fixa.front());
+                    pilha_pos_fixa.pop_front();
+                }
+            }
                 // marca
                 string tipo = TipoPosFixa();
-                cout << "Tipo variavel de entrada: " << tipo_entrada << endl << "Tipo expressao: " << tipo << endl;
+                //cout << "Tipo variavel de entrada: " << tipo_entrada << endl << "Tipo expressao: " << tipo << endl;
                 if((tipo_entrada == "variavel sinteiro" && tipo != "int") || (tipo_entrada == "variavel sbooleano" && tipo != "bool")){
                     cout << contador << " Erro: Tipo invalido atribuicao" << endl;
                     exit(1);
@@ -1470,7 +1476,7 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
             }
         }
         else
-        {
+        {  // se o 1 termo da expressao dps do atribuicao for diferente ao tipo de entrada, cai aqui
             Analisa_expressao(file, caractere, token);
             if(!pilha_pos_fixa.empty()){ // tem q ver se essa merda faz sentido msm
                 while (!pilha_pos_fixa.empty())
