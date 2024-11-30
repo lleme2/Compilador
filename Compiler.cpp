@@ -25,6 +25,9 @@
 #include <cctype>
 
 using namespace std;
+
+
+
 vector<string> saida_pos_fixa;
 size_t size = 20;
 
@@ -694,9 +697,11 @@ void TrataErro(FILE *file, char *caractere, Token &token){
     if(*caractere == '}'){
         msg_erro = "";
         string msg_erro = "ERRO LEXICAL NA LINHA " + to_string(contador) + ": '" + string(1, *caractere) + "' tentativa de fechar comentario sem par de abertura";
-        erros.push(msg_erro);
+        ////erros.push(msg_erro);
+        cout << msg_erro << endl;
+        
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
         exit(1);
     }
 
@@ -704,9 +709,11 @@ void TrataErro(FILE *file, char *caractere, Token &token){
     else{
         msg_erro = "";
         msg_erro = "ERRO LEXICAL NA LINHA " + to_string(contador) + ": caractere '" + string(1, *caractere) + "' nao reconhecido pela linguagem";
-        erros.push(msg_erro);
+        ////erros.push(msg_erro);
+        cout << msg_erro << endl;
+        
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
         exit(1);
     }
 
@@ -742,9 +749,11 @@ void PegaToken(FILE *file, char *caractere, Token &token){
                 if(*caractere == EOF){
                     msg_erro = "";
                     msg_erro = "ERRO LEXICAL NA LINHA " + to_string(save_linha_abre_comentario) + ": comentario aberto nao foi fechado";
-                    erros.push(msg_erro);
+                    ////erros.push(msg_erro);
+                    cout << msg_erro << endl;
+                    
                     //imprime_codigo_com_linhas();
-                    imprime_erros();
+                    //imprime_erros();
                     exit(1);
                     break;
                 }
@@ -901,9 +910,13 @@ void Analisa_tipo(FILE *file, char *caractere, Token &token){
     if(token.simbolo != "sinteiro" && token.simbolo != "sbooleano"){
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": tipo de variavel invalido";
-        erros.push(msg_erro);
-        //imprime_codigo_com_linhas();
-        imprime_erros();
+        //logFile << msg_erro << endl;
+        //cout << "tipo de variavel invalido" << endl;
+        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        if (file != NULL) {
+            fprintf(file, msg_erro.c_str());
+            fclose(file);  // Fechar o arquivo após a escrita
+        }
         exit(1);
     }
     else{
@@ -928,9 +941,15 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
                     if(token.simbolo == "sdoispontos"){
                         msg_erro = "";
                         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando identificador de variavel apos ','";
-                        erros.push(msg_erro);
+                        ////erros.push(msg_erro);
+                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                        
                         //imprime_codigo_com_linhas();
-                        imprime_erros();
+                        //imprime_erros();
                         exit(1);
                         return;
                     }
@@ -939,9 +958,15 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
             else{
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando ',' ou ':' apos declaracao de variavel";
-                erros.push(msg_erro);
+                ////erros.push(msg_erro);
+                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                
                 //imprime_codigo_com_linhas();
-                imprime_erros();
+                //imprime_erros();
                 exit(1);
                 return;
             }
@@ -950,7 +975,8 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
             cout << "ERRO: Variavel duplicada!" << endl;
             //PegaToken(file, caractere, token); Se n tiver isso tem loop ininito, falta tratar o erro decentemente
             //imprime_codigo_com_linhas();
-            imprime_erros();
+            //imprime_erros();
+            
             exit(1);
         }
     }while(token.simbolo != "sdoispontos");
@@ -983,9 +1009,15 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
                     else{
                         msg_erro = "";
                         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": Faltou ';' apos declaracao de variavel";
-                        erros.push(msg_erro);
+                        ////erros.push(msg_erro);
                         //imprime_codigo_com_linhas();
-                        imprime_erros();
+                        //imprime_erros();
+                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                        
                         exit(1);
                         return;
 
@@ -994,9 +1026,15 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
             else{
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": a variavel declarada nao tem identificador correspondente";
-                erros.push(msg_erro);
+                ////erros.push(msg_erro);
                 //imprime_codigo_com_linhas();
-                imprime_erros();
+                //imprime_erros();
+                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                
                 exit(1);
                 return;
             }
@@ -1040,25 +1078,38 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
             else{
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' na declaracao do procedimento";
-                erros.push(msg_erro);     
+                ////erros.push(msg_erro);     
                 //imprime_codigo_com_linhas();
-                imprime_erros();
+                //imprime_erros();
+                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                
                 exit(1);            
             }
         }
         else{
             cout << "\nErro: na declaracao de procedimento";
             //imprime_codigo_com_linhas();
-            imprime_erros();
+            //imprime_erros();
+            
             exit(1);
         }   
     }
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificador na declaracao do procedimento";
-        erros.push(msg_erro);
+        ////erros.push(msg_erro);
+        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+        
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
         exit(1);       
     }
     // funcao desempilha
@@ -1113,43 +1164,69 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
                     else{
                         msg_erro = "";
                         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' na declaracao da funcao";
-                        erros.push(msg_erro);
+                        ////erros.push(msg_erro);
                         //imprime_codigo_com_linhas();
-                        imprime_erros();
+                        //imprime_erros();
+                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                        
                         exit(1); 
                     }
                 }
                 else{
                     msg_erro = "";
                     msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": parametro da funcao de tipo invalido";
-                    erros.push(msg_erro);
+                    ////erros.push(msg_erro);
                     //imprime_codigo_com_linhas();
-                    imprime_erros();
+                    //imprime_erros();
+                    FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                    
                     exit(1);                  
                 }
             }
             else{
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ':' apos identificador de funcao";
-                erros.push(msg_erro);
+                //erros.push(msg_erro);
                 //imprime_codigo_com_linhas();
-                imprime_erros();
+                //imprime_erros();
+                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                
                 exit(1);             
             }
             }
             else{
                 cout << "Erro: Essa funcao ja existe!" << endl;
                 //imprime_codigo_com_linhas();
-                imprime_erros();
+                //imprime_erros();
+                cout << msg_erro << endl;
+                
                 exit(1);
             }
         }
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificador na declaracao da funcao";
-            erros.push(msg_erro);
+            //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
-            imprime_erros();
+            //imprime_erros();
+            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+            
             exit(1); 
     }
     Desempilhar();
@@ -1169,9 +1246,15 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';'";
-            erros.push(msg_erro);
+            //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
-            imprime_erros();
+            //imprime_erros();
+            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+            
             exit(1);            
         }
     }
@@ -1195,7 +1278,8 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         else{
             cout << "Erro: Uso de variavel ou funcao nao declarada na expressao" << endl;
             //imprime_codigo_com_linhas();
-            imprime_erros();
+            //imprime_erros();
+            
             exit(1);
         }
         //Analisa_chamada_funcao(file, caractere, token);
@@ -1243,9 +1327,15 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": parenteses aberto nao foi fechado";
-            erros.push(msg_erro);
+            //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
-            imprime_erros();
+            //imprime_erros();
+            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+            
             exit(1);
         }
     }
@@ -1255,9 +1345,15 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": termo usado '" + token.lexema + "' invalido";
-        erros.push(msg_erro);
+        //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
+        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+        
         exit(1);
     }
     return;
@@ -1529,9 +1625,15 @@ void Analisa_se(FILE *file, char *caractere, Token &token){
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": falta um 'entao' apos o se";
-        erros.push(msg_erro);
+        //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
+        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+        
         exit(1);
         //return;
     }
@@ -1557,9 +1659,15 @@ void Analisa_enquanto(FILE *file, char *caractere, Token &token){
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": falta um 'faca' apos o enquanto";
-        erros.push(msg_erro);
+        //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
+        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+        
         exit(1);
     }
 }
@@ -1583,41 +1691,61 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
                     else{
                         msg_erro = "";
                         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o leia";
-                        erros.push(msg_erro);
+                        //erros.push(msg_erro);
                         //imprime_codigo_com_linhas();
-                        imprime_erros();
+                        //imprime_erros();
+                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                        
                         exit(1);
                     }
                 }
                 else{
                     cout << "Erro: Tipo de variavel para leitura incorreto!" << endl;
                     //imprime_codigo_com_linhas();
-                    imprime_erros();
+                    //imprime_erros();
+                    
                     exit(1);
                 }
             }
             else{
                 cout << contador << "Erro: Nao existe essa variavel para leitura!" << endl;
                 //imprime_codigo_com_linhas();
-                imprime_erros();
+                //imprime_erros();
+                
                 exit(1);
             }
         }
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificacao da variavel para leitura";
-            erros.push(msg_erro);
+            //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
-            imprime_erros();
+            //imprime_erros();
+            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+            
             exit(1);
         }
     }
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou abertura de parenteses '(' para o leia";
-        erros.push(msg_erro);
+        //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
+        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        if (file != NULL) {
+            fprintf(file, msg_erro.c_str());
+            fclose(file);  // Fechar o arquivo após a escrita
+        }
+        
         exit(1);
     }
 }
@@ -1641,16 +1769,23 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
                     else{
                         msg_erro = "";
                         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou fechamento de parenteses ')' para o escreva";
-                        erros.push(msg_erro);
+                        //erros.push(msg_erro);
                         //imprime_codigo_com_linhas();
-                        imprime_erros();
+                        //imprime_erros();
+                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                        if (file != NULL) {
+                            fprintf(file, msg_erro.c_str());
+                            fclose(file);  // Fechar o arquivo após a escrita
+                        }
+                        
                         exit(1);
                     }
                 }
                 else{
                     cout << "Erro: Tipo de variavel para leitura incorreto!" << endl;
                     //imprime_codigo_com_linhas();
-                    imprime_erros();
+                    //imprime_erros();
+                    
                     exit(1);
                 }
             }
@@ -1658,16 +1793,24 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
                 cout << "ERRO: Variavel nao declarada no comando escreva!" << endl;
                 //PegaToken(file, caractere, token);
                 //imprime_codigo_com_linhas();
-                imprime_erros();
+                //imprime_erros();
+                cout << msg_erro << endl;
+                
                 exit(1);
             }
         }
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificacao da variavel para o escreva";
-            erros.push(msg_erro);
+            //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
-            imprime_erros();
+            //imprime_erros();
+            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                fprintf(file, msg_erro.c_str());
+                fclose(file);  // Fechar o arquivo após a escrita
+            }
+            
             exit(1);
         }
 
@@ -1675,9 +1818,15 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou abertura de parenteses '(' para o escreva";
-        erros.push(msg_erro);
+        //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
+        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        if (file != NULL) {
+            fprintf(file, msg_erro.c_str());
+            fclose(file);  // Fechar o arquivo após a escrita
+        }
+        
         exit(1);
     }
     GERA("","PRN",NULL,NULL);
@@ -1723,9 +1872,15 @@ void Analisa_comandos(FILE *file, char *caractere, Token &token){
             else{
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' apos comando";
-                erros.push(msg_erro);
+                //erros.push(msg_erro);
                 //imprime_codigo_com_linhas();
-                imprime_erros();
+                //imprime_erros();
+                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                
                 exit(1);
             }
         }
@@ -1736,9 +1891,14 @@ void Analisa_comandos(FILE *file, char *caractere, Token &token){
         
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou usar 'inicio' para iniciar o programa declarado";
-        erros.push(msg_erro);
+        //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
+        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        if (file != NULL) {
+            fprintf(file, msg_erro.c_str());
+            fclose(file);  // Fechar o arquivo após a escrita
+        }
         exit(1);
     }
     return;
@@ -1788,29 +1948,49 @@ void AnalisadorSintatico(FILE *file) {
             else{
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' apos declaracao do programa";
-                erros.push(msg_erro);
+                //erros.push(msg_erro);
                 ////imprime_codigo_com_linhas();
-                imprime_erros();
+                //imprime_erros();
+                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
                 exit(1);
+                
             }
         }
         //se o programa foi declarado mas nao identificado com identificador, coloca erro na fila
         else{
             msg_erro = "";
             msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": o nome de identificacao do programa nao foi inserido";
-            erros.push(msg_erro);
+            //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
-            imprime_erros();
+            //imprime_erros();
+            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+            if (file != NULL) {
+                fprintf(file, msg_erro.c_str());
+                fclose(file);  // Fechar o arquivo após a escrita
+            }
             exit(1);
-        }
+                
+                exit(1);
+            }
     }
     //se o programa nao iniciou declarando o "programa", coloca erro na fila
     else{
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": A linguagem exige que o inicio do codigo seja a declaracao do programa usando 'programa'";
-        erros.push(msg_erro);
+        //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
-        imprime_erros();
+        //imprime_erros();
+        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        if (file != NULL) {
+            fprintf(file, msg_erro.c_str());
+            fclose(file);  // Fechar o arquivo após a escrita
+        }
+        exit(1);
+        
         exit(1);
     }
 
@@ -1842,12 +2022,16 @@ void imprime_codigo_com_linhas(){
 }
 
 void imprime_erros(){
+    
     while (!erros.empty()) {
         // Acessa o primeiro erro da fila e o imprime
-        cout << erros.front() << endl;
+        //cout << erros.front() << endl;
+        //logFile << erros.front() << std::endl;
         // Remove o erro da fila
         erros.pop();
     }
+    
+    
 }
 
 int main() {
@@ -1884,13 +2068,18 @@ int main() {
     //Desempilhar();
 
     ////imprime_codigo_com_linhas();
-    imprime_erros();
+    //imprime_erros();
     //ImprimirTabela();
 
     //cout << endl << endl << saida_pos_fixa;
 
     fclose(file);
-    std::cout.rdbuf(coutBuffer); // Restaura o buffer padrão
+    string compileCommand = "python D:/Users/Home/Documents/GitHub/demo/Compilador/main.py";
+    int compileResult = system(compileCommand.c_str());
+    if (compileResult != 0) {
+       cout << "Deu merda na compilacao" << endl;
+    }
     logFile.close();
+    cout.rdbuf(coutBuffer); // Restaura o buffer padrão
     return 0;
 }
