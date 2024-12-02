@@ -2070,13 +2070,14 @@ int main() {
     // Como o arquivo foi aberto no modo de escrita, ele já está vazio
     APAGA_GERA.close(); // Fecha o arquivo
 
-    std::ofstream logFile(PATH_LOG);
+    /*std::ofstream logFile(PATH_LOG);
     if (!logFile) {
         std::cerr << "Erro ao abrir o arquivo de log!" << std::endl;
         return 1;
     }
     std::streambuf* coutBuffer = std::cout.rdbuf(); // Salva o buffer padrão
-    std::cout.rdbuf(logFile.rdbuf()); // Redireciona para o arquivo
+    std::cout.rdbuf(logFile.rdbuf()); // Redireciona para o arquivo */
+
     
     //abertura do arquivo fonte
     FILE *file;
@@ -2091,7 +2092,13 @@ int main() {
     
     //chama o analisador sintatico
     AnalisadorSintatico(file);
-    cout << " Codigo compilado com sucesso!" << endl;
+
+    string msg_erro = " Codigo compilado com sucesso!";
+    FILE* file_LOG = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        if (file != NULL) {
+            fprintf(file_LOG, msg_erro.c_str());
+            fclose(file_LOG);  // Fechar o arquivo após a escrita
+        }
 
     //Desempilhar();
 
@@ -2107,7 +2114,7 @@ int main() {
     if (compileResult != 0) {
        cout << "Deu merda na compilacao" << endl;
     }
-    logFile.close();
-    cout.rdbuf(coutBuffer); // Restaura o buffer padrão
+    //logFile.close();
+    //cout.rdbuf(coutBuffer); // Restaura o buffer padrão
     return 0;
 }
