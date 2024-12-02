@@ -216,6 +216,9 @@ bool IsLetter(const string& s) {
 string TipoPosFixa() {
     stack<string> tipos; // Pilha para armazenar os tipos ("int" ou "bool")
     // marca 2
+    for(int i = 0; i < saida_pos_fixa.size(); i++){
+        cerr << saida_pos_fixa[i] << endl;
+    }
     for (const string& c : saida_pos_fixa) {
         if (IsDigit(c) && c != "div" && c != "e" && c != "ou" && c != "nao" && c != "verdadeiro" && c != "falso") {
             //cout << "Digito expressao: " << c << endl;
@@ -1061,16 +1064,18 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
                 int aux = vec_allocs.size()-1;
                 int controle_aux = vec_allocs[aux].rotulo;
                 ////print_allocs_vector()
-                while(controle_aux == vec_allocs[aux].rotulo){
-                    if(vec_allocs.size() == 0){
-                        break;
+                if(controle_aux == rotulo - 1){
+                    while(controle_aux == vec_allocs[aux].rotulo){
+                        if(vec_allocs.size() == 0){
+                            break;
+                        }
+                        GERA("","DALLOC",vec_allocs[aux].start_point,vec_allocs[aux].qntd_variaveis);
+                        for(int j=vec_allocs[aux].qntd_variaveis-1;j>=0;j--){
+                            s--;
+                        }
+                        vec_allocs.pop_back();
+                        aux--;
                     }
-                    GERA("","DALLOC",vec_allocs[aux].start_point,vec_allocs[aux].qntd_variaveis);
-                    for(int j=vec_allocs[aux].qntd_variaveis-1;j>=0;j--){
-                        s--;
-                    }
-                    vec_allocs.pop_back();
-                    aux--;
                 }
                 GERA("","RETURN",NULL,NULL);
                 GERA(to_string(controle_retorno), "NULL", NULL, NULL);
@@ -1145,6 +1150,7 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
                         int aux = vec_allocs.size()-1;
                         int controle_aux = vec_allocs[aux].rotulo;
                         //print_allocs_vector()
+                        if(controle_aux == rotulo - 1){
                         while(controle_aux == vec_allocs[aux].rotulo){
                             if(vec_allocs.size() == 0){
                                 break;
@@ -1155,8 +1161,8 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
                             }
                             vec_allocs.pop_back();
                             aux--;
-                            
                         }
+                }
                         GERA("","RETURN",NULL,NULL);
                         GERA(to_string(controle_retorno), "NULL", NULL, NULL);
                         // macaquice 4
@@ -1432,17 +1438,19 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
         PegaToken(file, caractere, token);
     }
     Analisa_termo(file, caractere, token);
+
     //ImprimeDeque(pilha_pos_fixa);
     //cout << saida_pos_fixa << endl;.push_back
     while(token.simbolo == "smais" || token.simbolo == "smenos" || token.simbolo == "sou"){
         if(token.simbolo == "smais" || token.simbolo == "smenos"){
+            cerr << "lex " << token.lexema << endl; 
             if(!pilha_pos_fixa.empty()){
-                //cout << "Saida da pilha sou: " << saida_pos_fixa << endl;
-                //ImprimeDeque(pilha_pos_fixa);
                 int preced = precedencia(token.lexema);
                 string controle_pilha_pos_fixa = "";
                 controle_pilha_pos_fixa = pilha_pos_fixa.front();
                 int preced_controle = precedencia(controle_pilha_pos_fixa);
+                cerr << "Precd front: "<< preced_controle << endl;
+                cerr << "Precd token: "<< preced << endl;
                 while(preced_controle >= preced && preced != -1 && preced_controle != -1 && controle_pilha_pos_fixa != "("){
                             pilha_pos_fixa.pop_front();
                             saida_pos_fixa.push_back(controle_pilha_pos_fixa);
@@ -1452,7 +1460,8 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
                             controle_pilha_pos_fixa = pilha_pos_fixa.front();
                 }
             }
-            pilha_pos_fixa.push_front(token.lexema);
+            cerr << "Pilha vazia" << endl;
+            pilha_pos_fixa.push_front(token.lexema); 
             //ImprimeDeque(pilha_pos_fixa);
             //cout << saida_pos_fixa << endl;.push_back
         }
@@ -1486,6 +1495,7 @@ void Analisa_expressao_simples(FILE *file, char *caractere, Token &token){
 
 void Analisa_expressao(FILE *file, char *caractere, Token &token){
     //saida_pos_fixa.clear();
+    cerr << "Token antes da burrice: " <<token.lexema << endl;
     Analisa_expressao_simples(file, caractere, token);
     while(token.simbolo == "smaior" || token.simbolo == "smaiorig" || token.simbolo == "sig" || token.simbolo == "smenor" || token.simbolo == "smenorig" || token.simbolo == "sdif"){
         if(!pilha_pos_fixa.empty()){
@@ -1514,12 +1524,17 @@ void Analisa_expressao(FILE *file, char *caractere, Token &token){
         PegaToken(file, caractere, token);
         Analisa_expressao_simples(file, caractere, token);
     }
+    if(!pilha_pos_fixa.empty() && pilha_pos_fixa.front() != "("){
+        saida_pos_fixa.push_back(pilha_pos_fixa.front());
+        pilha_pos_fixa.pop_front();
+    }
     //ImprimeDeque(pilha_pos_fixa);
     //cout << saida_pos_fixa << endl;.push_back
     //PegaToken(file, caractere, token);
 }
 
 void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
+    cerr << "Entrada: " << token.lexema << endl;
     string possivel_procedimento = token.lexema;
     string tipo_entrada = Pesquisa_tipo(token.lexema);
     int endereco_proc = Pesquisa_endereco(token.lexema);
@@ -1529,6 +1544,7 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
     {
         PegaToken(file, caractere, token);
         string tipo_saida = Pesquisa_tipo(token.lexema);
+        cerr << "Saida: " << token.lexema << endl;
         if (tipo_saida != "NaN" && tipo_entrada != tipo_saida)
         {
             if ((tipo_entrada == "variavel sinteiro" && tipo_saida == "funcao inteiro") || (tipo_entrada == "variavel sbooleano" && tipo_saida == "funcao booleana"))
@@ -1544,8 +1560,15 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
             else if(tipo_entrada == "funcao inteiro" || tipo_entrada == "funcao booleana"){
                 Analisa_expressao(file, caractere, token);
                 // marca
-                if((tipo_entrada == "funcao inteiro" && TipoPosFixa() != "int") || (tipo_entrada == "funcao booleana" && TipoPosFixa() != "bool")){
-                    cout << contador << " Erro: Tipo invalido atribuicao" << endl;
+                string tipo = TipoPosFixa();
+                cerr << tipo << endl;
+                if((tipo_entrada == "funcao inteiro" && tipo != "int") || (tipo_entrada == "funcao booleana" && tipo != "bool")){
+                    string msg_erro = to_string(contador) + " Erro: Tipo invalido atribuicao 3";
+                    FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                    if (file != NULL) {
+                        fprintf(file, msg_erro.c_str());
+                        fclose(file);  // Fechar o arquivo após a escrita
+                    }
                     exit(1);
                 }
                 Desempilha_posfixa();
@@ -1562,9 +1585,14 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
             }
                 // marca
                 string tipo = TipoPosFixa();
-                //cout << "Tipo variavel de entrada: " << tipo_entrada << endl << "Tipo expressao: " << tipo << endl;
+                cerr << tipo << endl;
                 if((tipo_entrada == "variavel sinteiro" && tipo != "int") || (tipo_entrada == "variavel sbooleano" && tipo != "bool")){
-                    cout << contador << " Erro: Tipo invalido atribuicao" << endl;
+                    string msg_erro = to_string(contador) + " Erro: Tipo invalido atribuicao 2";
+                    FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                    if (file != NULL) {
+                        fprintf(file, msg_erro.c_str());
+                        fclose(file);  // Fechar o arquivo após a escrita
+                    }
                     exit(1);
                 }
                 Desempilha_posfixa();
@@ -1574,18 +1602,16 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
         else
         {  // se o 1 termo da expressao dps do atribuicao for diferente ao tipo de entrada, cai aqui
             Analisa_expressao(file, caractere, token);
-            if(!pilha_pos_fixa.empty()){ // tem q ver se essa merda faz sentido msm
-                while (!pilha_pos_fixa.empty())
-                {
-                    saida_pos_fixa.push_back(pilha_pos_fixa.front());
-                    pilha_pos_fixa.pop_front();
-                }
-            }
                 // marca
                 string tipo = TipoPosFixa();
-                //cout << "Tipo variavel de entrada: " << tipo_entrada << endl << "Tipo expressao: " << tipo << endl;
+                cerr << tipo << endl;
                 if((tipo_entrada == "variavel sinteiro" && tipo != "int") || (tipo_entrada == "variavel sbooleano" && tipo != "bool")){
-                    cout << contador << " Erro: Tipo invalido atribuicao" << endl;
+                    string msg_erro = to_string(contador) + " Erro: Tipo invalido atribuicao 3";
+                    FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                    if (file != NULL) {
+                        fprintf(file, msg_erro.c_str());
+                        fclose(file);  // Fechar o arquivo após a escrita
+                    }
                     exit(1);
                 }
                 Desempilha_posfixa();
@@ -1939,6 +1965,7 @@ void AnalisadorSintatico(FILE *file) {
                     for(int j=vec_allocs[aux].qntd_variaveis-1;j>=0;j--){
                         s--;
                     }
+                    vec_allocs.pop_back();
                     aux--;
                 }
                 GERA("", "HLT", NULL, NULL);
@@ -2062,9 +2089,10 @@ int main() {
         return 1;
     }
     
-
     //chama o analisador sintatico
     AnalisadorSintatico(file);
+    cout << " Codigo compilado com sucesso!" << endl;
+
     //Desempilhar();
 
     ////imprime_codigo_com_linhas();
