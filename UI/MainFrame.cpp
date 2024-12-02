@@ -166,9 +166,11 @@ void MainFrame::OnMenuOpen2(wxCommandEvent& evt) {
         }
 
         char buffer[256];
+        int contador = 0;
         wxString output;
         while (fgets(buffer, sizeof(buffer), file2) != NULL) {
             output += wxString(buffer);
+            contador++;
         }
 
         fclose(file2);
@@ -246,7 +248,13 @@ void MainFrame::OnDataMemoryButtonClicked(wxCommandEvent& evt) {
     wxString memoryContent;
     memoryContent << "Topo da pilha: " << s << " Memoria de Dados:\n";
     for (size_t i = 0; i < memory.size(); ++i) {
-        memoryContent << "Posicao [" << i << "]: " << wxString(memory[i]) << "\n";
+        if (i == s) {
+            memoryContent << "Posicao [" << i << "]: " << wxString(memory[i]) << " <--" << "\n";
+        }
+        else {
+            memoryContent << "Posicao [" << i << "]: " << wxString(memory[i]) << "\n";
+        }
+       
     }
     
 
