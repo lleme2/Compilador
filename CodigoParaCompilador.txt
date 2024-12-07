@@ -1,0 +1,36 @@
+
+
+programa moduloc;
+var res
+		:
+			inteiro
+				;
+procedimento calcula;
+
+var b,a,aux:inteiro;
+
+	procedimento ler;
+        {var aux: inteiro;}
+	inicio 
+           leia(a);
+           leia(b); 
+        fim;
+inicio
+      ler;
+      aux:= b-(b*(a div b)); 
+
+      enquanto aux > 0
+      faca inicio
+               a:= b;
+               b:= aux;
+               aux:= b-(b*(a div b)); 
+          fim;
+       res:= b-1;
+fim;
+
+
+inicio
+	calcula;
+        escreva(res);
+fim.
+	

@@ -1,14 +1,14 @@
-/*#define PATH_COMPILER "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/Compiler.cpp"
+#define PATH_COMPILER "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/Compiler.cpp"
 #define PATH_LOG "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/log.txt"
-#define PATH_TXT "C:/CodigoParaCompilador.txt"
-#define PATH_GERA "C:\\-----PUCCAMPINAS----\\8 SEMESTRE\\Compiladores\\Compilador\\gera.txt"*/
+#define PATH_TXT "C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/CodigoParaCompilador.txt"
+#define PATH_GERA "C:\\-----PUCCAMPINAS----\\8 SEMESTRE\\Compiladores\\Compilador\\gera.txt"
 
-#define PATH_COMPILER "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler.cpp"
+/*#define PATH_COMPILER "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler.cpp"
 #define PATH_OUTPUT "d:/Users/Home/Documents/GitHub/demo/Compilador/Compiler"
 #define PATH_LOG "d:/Users/Home/Documents/GitHub/demo/Compilador/log.txt"
 #define PATH_TXT "D:/Users/Home/Desktop/CodigoCompilador.txt"
 #define PATH_GERA "d:/Users/Home/Documents/GitHub/demo/Compilador/gera.txt"
-#define PATH_OBJ "d:/Users/Home/Documents/GitHub/demo/Compilador/object.obj"
+#define PATH_OBJ "d:/Users/Home/Documents/GitHub/demo/Compilador/object.obj"*/
 
 #include <stdio.h>
 #include <iostream>
@@ -194,8 +194,6 @@ void Desempilha_posfixa(){
     //cout << "Tipo da expressao: " << TipoPosFixa() << endl;
     cout << endl;
     Gera_Expressao();
-    saida_pos_fixa.clear();
-    pilha_pos_fixa.clear();
 }
 
 bool IsDigit(const string& s) {
@@ -224,17 +222,18 @@ string TipoPosFixa() {
             //cout << "Digito expressao: " << c << endl;
             // Digito é tratado como inteiro
             tipos.push("int");
-        } else if (c == "verdadeiro" || c == "falso") {
+        } 
+        else if (c == "verdadeiro" || c == "falso") {
             //cout << "Booleano expressao: " << c << endl;
             // Literais booleanos
             tipos.push("bool");
         } else if (IsLetter(c) && c != "div" && c != "e" && c != "ou" && c != "nao" && c != "verdadeiro" && c != "falso") {
             //cout << "Variavel expressao: " << c << endl;
             // Variável (precisa ser inferida, assumimos "int" como exemplo)
-            if(Pesquisa_tipo(c) == "variavel sbooleano"){
+            if(Pesquisa_tipo(c) == "variavel sbooleano" || Pesquisa_tipo(c) == "funcao booleana"){
                 tipos.push("bool");
             }
-            else if(Pesquisa_tipo(c) == "variavel sinteiro"){
+            else if(Pesquisa_tipo(c) == "variavel sinteiro" || Pesquisa_tipo(c) == "funcao inteiro"){
                 tipos.push("int");
             }
             else{
@@ -305,6 +304,9 @@ string Pesquisa_tipo(string lexema){
     if(IsDigit(lexema)){
         return "DigInt";
     }
+    if(lexema == "falso" || lexema == "verdadeiro"){
+        return "bool";
+    } 
     return "NaN";
 }
 
@@ -701,23 +703,30 @@ void TrataErro(FILE *file, char *caractere, Token &token){
         msg_erro = "";
         string msg_erro = "ERRO LEXICAL NA LINHA " + to_string(contador) + ": '" + string(1, *caractere) + "' tentativa de fechar comentario sem par de abertura";
         ////erros.push(msg_erro);
-        cout << msg_erro << endl;
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+        if (file != NULL) {
+            fprintf(file, msg_erro.c_str());
+            fclose(file);  // Fechar o arquivo após a escrita
+        }
+        exit(1);
         
         //imprime_codigo_com_linhas();
         //imprime_erros();
-        exit(1);
     }
 
     // se o erro for qualquer outro caractere, ele manda como erro para a fila de erros
     else{
         msg_erro = "";
         msg_erro = "ERRO LEXICAL NA LINHA " + to_string(contador) + ": caractere '" + string(1, *caractere) + "' nao reconhecido pela linguagem";
-        ////erros.push(msg_erro);
-        cout << msg_erro << endl;
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+        if (file != NULL) {
+            fprintf(file, msg_erro.c_str());
+            fclose(file);  // Fechar o arquivo após a escrita
+        }
+        exit(1);
         
         //imprime_codigo_com_linhas();
         //imprime_erros();
-        exit(1);
     }
 
     //salva como token o caractere de erro juntamente com o simbolo "serro"
@@ -742,7 +751,7 @@ void PegaToken(FILE *file, char *caractere, Token &token){
     }
 
     //elimina comentarios, espacos e pula linhas
-    while ((*caractere == '{' || *caractere == ' ' || *caractere == '\n') && (*caractere != EOF)) {
+    while ((*caractere == '{' || *caractere == ' ' || *caractere == '\n' || *caractere == '\t') && (*caractere != EOF)) {
         if (*caractere == '{') {
             //salva linha em que se abriu um comentario
             save_linha_abre_comentario = contador;
@@ -752,12 +761,15 @@ void PegaToken(FILE *file, char *caractere, Token &token){
                 if(*caractere == EOF){
                     msg_erro = "";
                     msg_erro = "ERRO LEXICAL NA LINHA " + to_string(save_linha_abre_comentario) + ": comentario aberto nao foi fechado";
-                    ////erros.push(msg_erro);
-                    cout << msg_erro << endl;
+                    FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+                    if (file != NULL) {
+                        fprintf(file, msg_erro.c_str());
+                        fclose(file);  // Fechar o arquivo após a escrita
+                    }
+                    exit(1);
                     
                     //imprime_codigo_com_linhas();
                     //imprime_erros();
-                    exit(1);
                     break;
                 }
             }
@@ -889,6 +901,12 @@ void Gera_Expressao(){
             {
                 GERA("", "NEG", NULL, NULL);
             }
+            else if(controle == "verdadeiro"){
+                GERA("", "LDC", 1, NULL);
+            }
+            else if(controle == "falso"){
+                GERA("", "LDC", 0, NULL);
+            }
             else
             {
                 if (IsDigit(controle))
@@ -898,7 +916,13 @@ void Gera_Expressao(){
                 else if (IsLetter(controle))
                 {
                     int end = Pesquisa_endereco(controle);
-                    GERA("", "LDV", end , NULL);
+                    if(Pesquisa_tipo(controle) == "funcao inteiro" || Pesquisa_tipo(controle) == "funcao booleana"){
+                        GERA("", "CALL", end, NULL);
+                        GERA("","LDV",0,NULL);
+                    }
+                    else{
+                        GERA("", "LDV", end , NULL);
+                    }
                     /*Na hora de mostrar na UI, n é pra aparecer o endereco da variavel e sim a variavel
                     errado: LDV 5 --> o codigo gerado
                     certo: LDV x --> é o q tem q ser mostrado no UI
@@ -912,10 +936,10 @@ void Gera_Expressao(){
 void Analisa_tipo(FILE *file, char *caractere, Token &token){
     if(token.simbolo != "sinteiro" && token.simbolo != "sbooleano"){
         msg_erro = "";
-        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": tipo de variavel invalido";
+        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": tipo de variavel declarada invalido";
         //logFile << msg_erro << endl;
         //cout << "tipo de variavel invalido" << endl;
-        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
         if (file != NULL) {
             fprintf(file, msg_erro.c_str());
             fclose(file);  // Fechar o arquivo após a escrita
@@ -945,7 +969,7 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
                         msg_erro = "";
                         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando identificador de variavel apos ','";
                         ////erros.push(msg_erro);
-                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -962,7 +986,7 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
                 msg_erro = "";
                 msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": esperando ',' ou ':' apos declaracao de variavel";
                 ////erros.push(msg_erro);
-                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -975,10 +999,16 @@ void Analisa_variaveis(FILE *file, char *caractere, Token &token){
             }
         }
         else{
-            cout << "ERRO: Variavel duplicada!" << endl;
-            //PegaToken(file, caractere, token); Se n tiver isso tem loop ininito, falta tratar o erro decentemente
+            msg_erro = "";
+            msg_erro = "ERRO na linha " + to_string(contador) + ": Variavel duplicada!";
+            //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
             //imprime_erros();
+            FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+                    if (file != NULL) {
+                        fprintf(file, msg_erro.c_str());
+                        fclose(file);  // Fechar o arquivo após a escrita
+                    }
             
             exit(1);
         }
@@ -1015,7 +1045,7 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
                         ////erros.push(msg_erro);
                         //imprime_codigo_com_linhas();
                         //imprime_erros();
-                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1028,11 +1058,11 @@ void Analisa_et_variaveis(FILE *file, char *caractere, Token &token){
             }
             else{
                 msg_erro = "";
-                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": a variavel declarada nao tem identificador correspondente";
+                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltando identificador de variavel";
                 ////erros.push(msg_erro);
                 //imprime_codigo_com_linhas();
                 //imprime_erros();
-                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1055,6 +1085,7 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
             GERA("","JMP",controle_retorno,NULL);
             Insere_tabela(token.lexema,"procedimento",nivel,rotulo);
             GERA(to_string(rotulo),"NULL",NULL,NULL);
+            int save_rotulo = rotulo;
             rotulo++;
             PegaToken(file, caractere, token);
             if(token.simbolo == "spontoevirgula"){
@@ -1064,7 +1095,7 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
                 int aux = vec_allocs.size()-1;
                 int controle_aux = vec_allocs[aux].rotulo;
                 ////print_allocs_vector()
-                if(controle_aux == rotulo - 1){
+                if(controle_aux == save_rotulo){
                     while(controle_aux == vec_allocs[aux].rotulo){
                         if(vec_allocs.size() == 0){
                             break;
@@ -1082,11 +1113,11 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
             }
             else{
                 msg_erro = "";
-                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' na declaracao do procedimento";
+                msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou ';' após declaracao do procedimento";
                 ////erros.push(msg_erro);     
                 //imprime_codigo_com_linhas();
                 //imprime_erros();
-                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1107,7 +1138,7 @@ void Analisa_declaracao_procedimento(FILE *file, char *caractere, Token &token){
         msg_erro = "";
         msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou identificador na declaracao do procedimento";
         ////erros.push(msg_erro);
-        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1132,6 +1163,7 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
             GERA("","JMP",controle_retorno,NULL);
             Insere_tabela(token.lexema,"",nivel,rotulo);
             GERA(to_string(rotulo),"NULL",NULL,NULL);
+            int save_rotulo = rotulo;
             rotulo++;
             PegaToken(file, caractere, token);
             if(token.simbolo == "sdoispontos"){
@@ -1150,7 +1182,7 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
                         int aux = vec_allocs.size()-1;
                         int controle_aux = vec_allocs[aux].rotulo;
                         //print_allocs_vector()
-                        if(controle_aux == rotulo - 1){
+                        if(controle_aux == save_rotulo){
                         while(controle_aux == vec_allocs[aux].rotulo){
                             if(vec_allocs.size() == 0){
                                 break;
@@ -1173,7 +1205,7 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
                         ////erros.push(msg_erro);
                         //imprime_codigo_com_linhas();
                         //imprime_erros();
-                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1188,7 +1220,7 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
                     ////erros.push(msg_erro);
                     //imprime_codigo_com_linhas();
                     //imprime_erros();
-                    FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                    FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1203,7 +1235,7 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
                 //erros.push(msg_erro);
                 //imprime_codigo_com_linhas();
                 //imprime_erros();
-                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1213,12 +1245,17 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
             }
             }
             else{
-                cout << "Erro: Essa funcao ja existe!" << endl;
+                msg_erro = "";
+                msg_erro = "ERRO NA LINHA: " + to_string(contador) + ": Essa funcao ja existe!";
+                ////erros.push(msg_erro);     
                 //imprime_codigo_com_linhas();
                 //imprime_erros();
-                cout << msg_erro << endl;
-                
-                exit(1);
+                FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                exit(1);                
             }
         }
         else{
@@ -1227,7 +1264,7 @@ void Analisa_declaracao_funcao(FILE *file, char *caractere, Token &token){
             //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
             //imprime_erros();
-            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+            FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1255,7 +1292,7 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
             //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
             //imprime_erros();
-            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+            FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1271,7 +1308,16 @@ void Analisa_subrotinas(FILE *file, char *caractere, Token &token){
 void Chamada_procedimento(FILE *file, char *caractere, string lexema){
     //ImprimirTabela();
     if(!Pesquisa_declaracao_proc(lexema)){
-        cout << "ERRO: Procedimento não declarado!" << lexema;
+        msg_erro = "";
+        msg_erro = "ERRO NA LINHA: " + to_string(contador) + ": Procedimento chamado não declarado: " + lexema;
+        ////erros.push(msg_erro);     
+        //imprime_codigo_com_linhas();
+        //imprime_erros();
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+        if (file != NULL) {
+            fprintf(file, msg_erro.c_str());
+            fclose(file);  // Fechar o arquivo após a escrita
+        }
     }
 }
 
@@ -1282,9 +1328,16 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
             PegaToken(file, caractere, token);
         }
         else{
-            cout << "Erro: Uso de variavel ou funcao nao declarada na expressao" << endl;
+            msg_erro = "";
+            msg_erro = "ERRO na linha " + to_string(contador) + ": Uso de variavel ou funcao nao declarada na expressao";
+            //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
             //imprime_erros();
+            FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+                    if (file != NULL) {
+                        fprintf(file, msg_erro.c_str());
+                        fclose(file);  // Fechar o arquivo após a escrita
+                    }
             
             exit(1);
         }
@@ -1336,7 +1389,7 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
             //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
             //imprime_erros();
-            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+            FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1346,6 +1399,7 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         }
     }
     else if(token.lexema == "verdadeiro" || token.lexema == "falso"){
+        saida_pos_fixa.push_back(token.lexema);
         PegaToken(file, caractere, token);
     }
     else{
@@ -1354,7 +1408,7 @@ void Analisa_fator(FILE *file, char *caractere, Token &token){
         //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
         //imprime_erros();
-        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1537,90 +1591,80 @@ void Analisa_atrib_chprocedimento(FILE *file, char *caractere, Token &token){
     cerr << "Entrada: " << token.lexema << endl;
     string possivel_procedimento = token.lexema;
     string tipo_entrada = Pesquisa_tipo(token.lexema);
-    int endereco_proc = Pesquisa_endereco(token.lexema);
-    int endereco_str = Pesquisa_endereco(token.lexema);
+    int endereco_entrada = Pesquisa_endereco(token.lexema);
     PegaToken(file, caractere, token);
     if (token.simbolo == "satribuicao")
     {
         PegaToken(file, caractere, token);
         string tipo_saida = Pesquisa_tipo(token.lexema);
-        cerr << "Saida: " << token.lexema << endl;
-        if (tipo_saida != "NaN" && tipo_entrada != tipo_saida)
+        int endereco_saida = Pesquisa_endereco(token.lexema);
+        if (tipo_saida != "NaN")
         {
-            if ((tipo_entrada == "variavel sinteiro" && tipo_saida == "funcao inteiro") || (tipo_entrada == "variavel sbooleano" && tipo_saida == "funcao booleana"))
-            {
-                //int endereco_str = Pesquisa_endereco(token.lexema);
-                //ImprimirTabela();
-                int end_func = Pesquisa_endereco(token.lexema);
-                GERA("","CALL",end_func,NULL);
+            if((tipo_entrada == "variavel sinteiro" && tipo_saida == "funcao inteiro") || (tipo_entrada == "variavel sbooleano" && tipo_saida == "funcao booleana")){
+                GERA("","CALL",endereco_saida,NULL);
                 GERA("","LDV",0,NULL);
-                GERA("","STR",endereco_str,NULL);
-                PegaToken(file, caractere, token); // MACAQUICE 2
+                GERA("","STR",endereco_entrada,NULL);
+                PegaToken(file, caractere, token);
             }
             else if(tipo_entrada == "funcao inteiro" || tipo_entrada == "funcao booleana"){
                 Analisa_expressao(file, caractere, token);
-                // marca
+                Desempilha_posfixa();
                 string tipo = TipoPosFixa();
-                cerr << tipo << endl;
-                if((tipo_entrada == "funcao inteiro" && tipo != "int") || (tipo_entrada == "funcao booleana" && tipo != "bool")){
-                    string msg_erro = to_string(contador) + " Erro: Tipo invalido atribuicao 3";
-                    FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                saida_pos_fixa.clear();
+                pilha_pos_fixa.clear();
+                if((tipo_entrada == "funcao inteiro" && tipo == "int") || (tipo_entrada == "funcao booleana" && tipo == "bool")){
+                    GERA("","STR",0,NULL);
+                }
+                else{
+                    string msg_erro = to_string(contador) + " Erro: Tipo invalido de atribuicao no retorno da funcao";
+                    FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                     if (file != NULL) {
                         fprintf(file, msg_erro.c_str());
                         fclose(file);  // Fechar o arquivo após a escrita
                     }
                     exit(1);
                 }
-                Desempilha_posfixa();
-                GERA("","STR",0,NULL);
+                
             }//
             else{ // se o 1 termo da expressao dps do atribuicao for igual ao tipo de entrada, cai aqui
-                Analisa_expressao(file, caractere, token);
-            if(!pilha_pos_fixa.empty()){ // tem q ver se essa merda faz sentido msm
-                while (!pilha_pos_fixa.empty())
-                {
-                    saida_pos_fixa.push_back(pilha_pos_fixa.front());
-                    pilha_pos_fixa.pop_front();
+                if(tipo_entrada == "variavel sinteiro" || tipo_entrada == "variavel sbooleano"){
+                    cerr << "entrou no atribui a variavel com :" << endereco_entrada << endl;
+                    Analisa_expressao(file, caractere, token);
+                    Desempilha_posfixa();
+                    string tipo = TipoPosFixa();
+                    saida_pos_fixa.clear();
+                    pilha_pos_fixa.clear();
+                    if((tipo_entrada == "variavel sinteiro" && tipo == "int") || (tipo_entrada == "variavel sbooleano" && tipo == "bool")){
+                        GERA("","STR",endereco_entrada,NULL);
+                    }
                 }
-            }
-                // marca
-                string tipo = TipoPosFixa();
-                cerr << tipo << endl;
-                if((tipo_entrada == "variavel sinteiro" && tipo != "int") || (tipo_entrada == "variavel sbooleano" && tipo != "bool")){
-                    string msg_erro = to_string(contador) + " Erro: Tipo invalido atribuicao 2";
-                    FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                else{
+                    string msg_erro = to_string(contador) + " Erro: Tipo que recebe atribuicao invalido";
+                    FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                     if (file != NULL) {
                         fprintf(file, msg_erro.c_str());
                         fclose(file);  // Fechar o arquivo após a escrita
                     }
                     exit(1);
                 }
-                Desempilha_posfixa();
-                GERA("","STR",endereco_str,NULL);
             }
         }
         else
         {  // se o 1 termo da expressao dps do atribuicao for diferente ao tipo de entrada, cai aqui
-            Analisa_expressao(file, caractere, token);
-                // marca
-                string tipo = TipoPosFixa();
-                cerr << tipo << endl;
-                if((tipo_entrada == "variavel sinteiro" && tipo != "int") || (tipo_entrada == "variavel sbooleano" && tipo != "bool")){
-                    string msg_erro = to_string(contador) + " Erro: Tipo invalido atribuicao 3";
-                    FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+            msg_erro = "";
+            msg_erro = "ERRO NA LINHA " + to_string(contador) + ": tipo saida atribuicao NaN";
+            FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                     if (file != NULL) {
                         fprintf(file, msg_erro.c_str());
                         fclose(file);  // Fechar o arquivo após a escrita
                     }
-                    exit(1);
-                }
-                Desempilha_posfixa();
-                GERA("","STR",endereco_str,NULL);
+            
+            exit(1);
         }
     }
     else{
         Chamada_procedimento(file, caractere, possivel_procedimento);
-        GERA("","CALL",endereco_proc,NULL);
+        GERA("","CALL",endereco_entrada,NULL);
     }
 }
 
@@ -1629,12 +1673,15 @@ void Analisa_se(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
     Analisa_expressao(file, caractere, token);
     Desempilha_posfixa();
+    saida_pos_fixa.clear();
+    pilha_pos_fixa.clear();
     salva_rotulo = rotulo;
     GERA("","JMPF",salva_rotulo,NULL);
     rotulo++;
     if(token.simbolo == "sentao"){
         PegaToken(file, caractere, token);
         Analisa_comando_simples(file, caractere, token);
+        cerr << "volta analisa comando simples sentao com: " << token.lexema;
         if(token.simbolo == "ssenao"){
             int salva_rotulo_entao = rotulo;
             rotulo++;
@@ -1654,7 +1701,7 @@ void Analisa_se(FILE *file, char *caractere, Token &token){
         //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
         //imprime_erros();
-        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1672,6 +1719,8 @@ void Analisa_enquanto(FILE *file, char *caractere, Token &token){
     PegaToken(file, caractere, token);
     Analisa_expressao(file, caractere, token);
     Desempilha_posfixa();
+    saida_pos_fixa.clear();
+    pilha_pos_fixa.clear();
     int salva_rotulo_saida_enquanto = rotulo;
     rotulo++;
     GERA("","JMPF",salva_rotulo_saida_enquanto,NULL);
@@ -1688,7 +1737,7 @@ void Analisa_enquanto(FILE *file, char *caractere, Token &token){
         //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
         //imprime_erros();
-        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1720,7 +1769,7 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
                         //erros.push(msg_erro);
                         //imprime_codigo_com_linhas();
                         //imprime_erros();
-                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1730,9 +1779,16 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
                     }
                 }
                 else{
-                    cout << "Erro: Tipo de variavel para leitura incorreto!" << endl;
+                    msg_erro = "";
+                    msg_erro = "ERRO na linha " + to_string(contador) + ": Tipo de variavel para leitura incorreto!";
+                    //erros.push(msg_erro);
                     //imprime_codigo_com_linhas();
                     //imprime_erros();
+                    FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+                            if (file != NULL) {
+                                fprintf(file, msg_erro.c_str());
+                                fclose(file);  // Fechar o arquivo após a escrita
+                            }
                     
                     exit(1);
                 }
@@ -1751,7 +1807,7 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
             //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
             //imprime_erros();
-            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+            FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1766,7 +1822,7 @@ void Analisa_leia(FILE *file, char *caractere, Token &token){
         //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
         //imprime_erros();
-        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
         if (file != NULL) {
             fprintf(file, msg_erro.c_str());
             fclose(file);  // Fechar o arquivo após a escrita
@@ -1798,7 +1854,7 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
                         //erros.push(msg_erro);
                         //imprime_codigo_com_linhas();
                         //imprime_erros();
-                        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                         if (file != NULL) {
                             fprintf(file, msg_erro.c_str());
                             fclose(file);  // Fechar o arquivo após a escrita
@@ -1808,21 +1864,34 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
                     }
                 }
                 else{
-                    cout << "Erro: Tipo de variavel para leitura incorreto!" << endl;
+                    msg_erro = "";
+                    msg_erro = "ERRO na linha " + to_string(contador) + ": Tipo de variavel para leitura incorreto!";
+                    //erros.push(msg_erro);
                     //imprime_codigo_com_linhas();
                     //imprime_erros();
+                    FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+                            if (file != NULL) {
+                                fprintf(file, msg_erro.c_str());
+                                fclose(file);  // Fechar o arquivo após a escrita
+                            }
                     
                     exit(1);
                 }
             }
             else{
-                cout << "ERRO: Variavel nao declarada no comando escreva!" << endl;
-                //PegaToken(file, caractere, token);
+                msg_erro = "";
+                msg_erro = "ERRO na linha " + to_string(contador) + ": Variavel nao declarada no comando escreva!";
+                //erros.push(msg_erro);
                 //imprime_codigo_com_linhas();
                 //imprime_erros();
-                cout << msg_erro << endl;
-                
+                FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
+                if (file != NULL) {
+                    fprintf(file, msg_erro.c_str());
+                    fclose(file);  // Fechar o arquivo após a escrita
+                }
+                    
                 exit(1);
+                
             }
         }
         else{
@@ -1831,7 +1900,7 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
             //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
             //imprime_erros();
-            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+            FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                 fprintf(file, msg_erro.c_str());
                 fclose(file);  // Fechar o arquivo após a escrita
@@ -1847,7 +1916,7 @@ void Analisa_escreva(FILE *file, char *caractere, Token &token){
         //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
         //imprime_erros();
-        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
         if (file != NULL) {
             fprintf(file, msg_erro.c_str());
             fclose(file);  // Fechar o arquivo após a escrita
@@ -1901,7 +1970,7 @@ void Analisa_comandos(FILE *file, char *caractere, Token &token){
                 //erros.push(msg_erro);
                 //imprime_codigo_com_linhas();
                 //imprime_erros();
-                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1916,11 +1985,11 @@ void Analisa_comandos(FILE *file, char *caractere, Token &token){
     else{
         
         msg_erro = "";
-        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou usar 'inicio' para iniciar o programa declarado";
+        msg_erro = "ERRO SINTATICO NA LINHA " + to_string(contador) + ": faltou usar 'inicio'";
         //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
         //imprime_erros();
-        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
         if (file != NULL) {
             fprintf(file, msg_erro.c_str());
             fclose(file);  // Fechar o arquivo após a escrita
@@ -1978,7 +2047,7 @@ void AnalisadorSintatico(FILE *file) {
                 //erros.push(msg_erro);
                 ////imprime_codigo_com_linhas();
                 //imprime_erros();
-                FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+                FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
                 if (file != NULL) {
                     fprintf(file, msg_erro.c_str());
                     fclose(file);  // Fechar o arquivo após a escrita
@@ -1994,7 +2063,7 @@ void AnalisadorSintatico(FILE *file) {
             //erros.push(msg_erro);
             //imprime_codigo_com_linhas();
             //imprime_erros();
-            FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+            FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
             if (file != NULL) {
                 fprintf(file, msg_erro.c_str());
                 fclose(file);  // Fechar o arquivo após a escrita
@@ -2011,7 +2080,7 @@ void AnalisadorSintatico(FILE *file) {
         //erros.push(msg_erro);
         //imprime_codigo_com_linhas();
         //imprime_erros();
-        FILE* file = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+        FILE* file = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
         if (file != NULL) {
             fprintf(file, msg_erro.c_str());
             fclose(file);  // Fechar o arquivo após a escrita
@@ -2094,7 +2163,7 @@ int main() {
     AnalisadorSintatico(file);
 
     string msg_erro = " Codigo compilado com sucesso!";
-    FILE* file_LOG = fopen(PATH_LOG, "a");  // Abertura para append (adicionar no final do arquivo)
+    FILE* file_LOG = fopen(PATH_LOG, "w");  // Abertura para append (adicionar no final do arquivo)
         if (file != NULL) {
             fprintf(file_LOG, msg_erro.c_str());
             fclose(file_LOG);  // Fechar o arquivo após a escrita
@@ -2109,7 +2178,7 @@ int main() {
     //cout << endl << endl << saida_pos_fixa;
 
     fclose(file);
-    string compileCommand = "python D:/Users/Home/Documents/GitHub/demo/Compilador/main.py";
+    string compileCommand = "python \"C:/-----PUCCAMPINAS----/8 SEMESTRE/Compiladores/Compilador/main.py\"";
     int compileResult = system(compileCommand.c_str());
     if (compileResult != 0) {
        cout << "Deu merda na compilacao" << endl;

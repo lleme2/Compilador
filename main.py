@@ -11,4 +11,4 @@ def gerar_obj(arquivo_codigo, arquivo_obj):
                 f_obj.write(b'\n')  # Adiciona uma nova linha entre as instruções (se necessário)
 
 # Usando a função
-gerar_obj('d:/Users/Home/Documents/GitHub/demo/Compilador/gera.txt', 'd:/Users/Home/Documents/GitHub/demo/Compilador/object.obj')
+gerar_obj("C:\\-----PUCCAMPINAS----\\8 SEMESTRE\\Compiladores\\Compilador\\gera.txt", 'C:\\-----PUCCAMPINAS----\\8 SEMESTRE\\Compiladores\\Compilador\\object.obj')
